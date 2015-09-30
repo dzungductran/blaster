@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Blaster</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="devicelist_scan">Scan Device</string>
+    <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving &#8230;</string>
+    <string name="not_connected">You are not connected to a device</string>
+    <string name="title_connecting">Status: connecting</string>
+    <string name="title_connected_to">Status: connected</string>
+    <string name="title_not_connected">Status: not connected</string>
+    <string name="title_config_wifi">Configure WiFi</string>
+    <string name="messegelist_send">Send</string>
+    <string name="toast_connected_to">Connected to</string>
+    <string name="toast_unable_to_connect">Unable to connect device</string>
+    <string name="toast_connection_lost">Device connection was lost</string>
+    <string name="start_scan">Scan</string>
+    <string name="stop_scan">Stop scan</string>
+    <string name="yes">Yes</string>
+    <string name="pairing">Pairing...</string>
+    <string name="not_pair">Not pair</string>
+    <string name="paired">Paired</string>
+    <string name="connected">Connected</string>
+    <string name="show_password">Show password</string>
+    <string name="save_password">Save password</string>
+    <string name="PSK">PSK</string>
+    <string name="EAP">EAP</string>
+    <string name="WEP">WEP</string>
+    <string name="NONE">None</string>
+    <string name="UNKNOWN">Unknown</string>
+    <string name="cancel_str">Cancel</string>
+    <string name="edison">edison</string>
+    <string name="action_edison_only">Show Edison only</string>
+
+</resources>

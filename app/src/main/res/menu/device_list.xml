@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.intel.ble.onboard.app.BLEOnbardActivity" >
+
+    <item android:id="@+id/scanning_indicator"
+        android:title=""
+        android:icon="@drawable/ic_action_scan"
+        android:orderInCategory="2"
+        android:showAsAction="always" />
+
+    <item android:id="@+id/action_scan"
+        android:title="@string/start_scan"
+        android:orderInCategory="3"
+        android:showAsAction="always" />
+
+    <item android:id="@+id/action_edison_only"
+        android:title="@string/action_edison_only"
+        android:orderInCategory="100"
+        android:checkable="true"
+        android:showAsAction="never" />
+</menu>
