@@ -5,4 +5,11 @@
     <color name="odd">#c71585</color>
     <color name="even">#b8860b</color>
 
+    <!-- card border -->
+    <color name="card_border">#c9c9c9</color>
+    <!-- card screen background -->
+    <color name="card_background">#e3e3e3</color>
+    <color name="card_seperator_gray">#33636363</color>
+    <color name="card_gray">#636363</color>
+
 </resources>
