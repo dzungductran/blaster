@@ -38,6 +38,7 @@ public class Constants {
 
     // serial command
     public static byte SERIAL_CMD_EXECUTE    = 0x1;
-    public static byte SERIAL_CMD_CLOSE      = 0x2;
-    public static byte SERIAL_CMD_STATUS     = 0xF;
+    public static byte SERIAL_CMD_STATUS     = 0x2;
+    public static byte SERIAL_CMD_ERROR      = 0x3;
+    public static byte SERIAL_CMD_CLOSE      = 0xF;
 }

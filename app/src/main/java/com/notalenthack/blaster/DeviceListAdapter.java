@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -40,9 +41,11 @@ public class DeviceListAdapter extends BaseAdapter {
 	private ArrayList<EdisonDevice> mDevices;
     private HashMap<String, EdisonDevice> mMap;
 	private LayoutInflater mInflater;
+    private Activity mActivity;
 
 	public DeviceListAdapter(Activity par) {
 		super();
+        mActivity = par;
 		mDevices  = new ArrayList<EdisonDevice>();
         mMap = new HashMap<String, EdisonDevice>();
 		mInflater = par.getLayoutInflater();
@@ -104,10 +107,11 @@ public class DeviceListAdapter extends BaseAdapter {
         if (convertView == null) {
         	convertView = mInflater.inflate(R.layout.activity_scanning_item, null);
         	fields = new FieldReferences();
-        	fields.deviceAddress = (TextView)convertView.findViewById(R.id.deviceAddress);
+            fields.deviceImage = (ImageView)convertView.findViewById(R.id.imageViewItem);
+            fields.deviceAddress = (TextView)convertView.findViewById(R.id.deviceAddress);
         	fields.deviceName    = (TextView)convertView.findViewById(R.id.deviceName);
             fields.deviceStatus  = (TextView)convertView.findViewById(R.id.deviceStatus);
-            fields.deviceIP      = (TextView)convertView.findViewById(R.id.deviceIP);
+            fields.deviceStatusIcon = (ImageView)convertView.findViewById(R.id.deviceStatusIcon);
 
             convertView.setTag(fields);
         } else {
@@ -122,33 +126,33 @@ public class DeviceListAdapter extends BaseAdapter {
         if(name == null || name.length() <= 0) name = "Unknown Device";
         
         fields.deviceName.setText(name);
+        if (name.equalsIgnoreCase(mActivity.getResources().getString(R.string.edison)) == true) {
+            fields.deviceImage.setImageResource(R.drawable.ic_edison);
+        }
         fields.deviceAddress.setText(address);
 
         if (device.getStatus() == EdisonDevice.Status.PAIRED) {
             fields.deviceStatus.setText(R.string.paired);
+            fields.deviceStatusIcon.setImageResource(R.drawable.ic_bluetooth_paired);
         } else if (device.getStatus() == EdisonDevice.Status.PAIRING) {
             fields.deviceStatus.setText(R.string.pairing);
+            fields.deviceStatusIcon.setImageResource(R.drawable.ic_bluetooth_disabled);
         } else if (device.getStatus() == EdisonDevice.Status.NONE) {
             fields.deviceStatus.setText(R.string.not_pair);
+            fields.deviceStatusIcon.setImageResource(R.drawable.ic_bluetooth_disabled);
         } else if (device.getStatus() == EdisonDevice.Status.CONNECTED) {
             fields.deviceStatus.setText(R.string.connected);
-        }
-
-        fields.deviceIP.setText(device.getIPAddress());
-        if (device.isIPSet()) {
-            if (device.getIPAddress().equals(EdisonDevice.DEFAULT_IP))
-                fields.deviceIP.setTextColor(Color.RED);
-            else
-                fields.deviceIP.setTextColor(Color.GREEN);
+            fields.deviceStatusIcon.setImageResource(R.drawable.ic_bluetooth_connected);
         }
 
 		return convertView;
 	}
 	
 	private class FieldReferences {
-		TextView deviceName;
+        ImageView deviceImage;
+        TextView deviceName;
 		TextView deviceAddress;
         TextView deviceStatus;
-        TextView deviceIP;
+        ImageView deviceStatusIcon;
 	}
 }
