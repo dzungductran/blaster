@@ -29,7 +29,7 @@
         </activity>
         <activity android:name=".CommandActivity"
             android:screenOrientation="portrait"
-            android:label="@string/add_command"></activity>
+            android:label="@string/commands"></activity>
         <activity android:name=".SplashScreen"
             android:screenOrientation="portrait"
             android:label="@string/app_name"

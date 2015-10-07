@@ -60,15 +60,9 @@ public class DeviceListActivity extends ListActivity {
     private DeviceListAdapter mDevicesListAdapter;
     private int mCurrentPosition;
     private boolean mScanning = false;
-    private Activity mThisActivity;
     private boolean mEdisonOnly = true;
 
-    private String mConnectedDeviceName = "";
     private ProgressIndicator mIndicator = null;
-
-    private static BluetoothSerialService mSerialService = null;
-
-    private static BluetoothObexClient mObexClient = null;
 
     private void initialization() {
 	    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -78,10 +72,6 @@ public class DeviceListActivity extends ListActivity {
 	    }
 
         mEdisonOnly = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(KEY_EDISON_ONLY, true);
-
-        mSerialService = new BluetoothSerialService(this, mHandlerBT);
-
-        mObexClient = new BluetoothObexClient(this, mHandlerBT);
 
         // Register the BroadcastReceiver
 	    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -95,84 +85,10 @@ public class DeviceListActivity extends ListActivity {
 	    this.registerReceiver(mReceiver, filter);
     }
 
-    // The Handler that gets information back from the BluetoothService
-    private final Handler mHandlerBT = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Constants.MESSAGE_STATE_CHANGE_CMD:
-                    if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothSerialService.STATE_CONNECTED:
-                            if (mCurrentPosition != -1 && mCurrentPosition < mDevicesListAdapter.getCount()) {
-                                mDevicesListAdapter.updateStatus(mCurrentPosition, EdisonDevice.Status.CONNECTED);
-                                mDevicesListAdapter.notifyDataSetChanged();
-
-                                EdisonDevice device = mDevicesListAdapter.getDevice(mCurrentPosition);
-                            }
-                            break;
-
-                        case BluetoothSerialService.STATE_LISTEN:
-                        case BluetoothSerialService.STATE_CONNECTING:
-                            break;
-
-                        case BluetoothSerialService.STATE_NONE:
-                            if (mCurrentPosition != -1 && mCurrentPosition < mDevicesListAdapter.getCount()) {
-                                mDevicesListAdapter.updateStatus(mCurrentPosition, EdisonDevice.Status.NONE);
-                                mDevicesListAdapter.notifyDataSetChanged();
-                            }
-                            break;
-                    }
-                    break;
-                case Constants.MESSAGE_WRITE_CMD:
-                    // data is in
-                    if (D) {
-                        byte[] writeBuf = (byte[]) msg.obj;
-                        Log.d(TAG, "write data: " + writeBuf);
-                    }
-                    break;
-
-                case Constants.MESSAGE_READ_CMD:
-                    if (D) {
-                        byte[] readBuf = (byte[]) msg.obj;
-                        Log.d(TAG, "read data: " + readBuf);
-                    }
-                    break;
-
-                case Constants.MESSAGE_DEVICE_NAME_CMD:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
-                    Toast.makeText(getApplicationContext(), getString(R.string.toast_connected_to) + " "
-                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-
-                case Constants.MESSAGE_TOAST_CMD:
-                    Toast.makeText(getApplicationContext(),
-                            msg.getData().getString(Constants.TOAST), Toast.LENGTH_LONG).show();
-                    if (mIndicator != null && mIndicator.isShowing()) {
-                        mIndicator.dismiss();
-                        mIndicator = null;
-                    }
-                    break;
-            }
-        }
-    };
-
     // The on-click listener for all devices in the ListViews
     protected void onListItemClick(ListView l, View v, int position, long id) {
         // Cancel discovery because it's costly and we're about to connect
         stopScanning();
-
-        // Previous connected
-        if (mCurrentPosition != -1 && position != mCurrentPosition) {
-            mSerialService.sendCommand(Constants.SERIAL_CMD_CLOSE, "");
-            mSerialService.stop();
-            // set status back to NONE which will check the device bluetooth connection status
-            // and update the UI
-            mDevicesListAdapter.updateStatus(mCurrentPosition, EdisonDevice.Status.NONE);
-            mDevicesListAdapter.notifyDataSetChanged();
-        }
 
         mCurrentPosition = position;
 
@@ -181,13 +97,7 @@ public class DeviceListActivity extends ListActivity {
            && (device.getStatus() == EdisonDevice.Status.PAIRED
              || device.getStatus() == EdisonDevice.Status.CONNECTED)) {
            if (D) Log.d(TAG, "device " + device.getName() + " bonded");
-/*
-            mSerialService.connect(device.getBluetoothDevice());
 
-            mObexClient.connect(device.getBluetoothDevice());
-
-            mObexClient.browseFolder("");
-*/
             Intent launchingIntent = new Intent(this, CommandActivity.class);
             launchingIntent.putExtra(Constants.DEVICE_STATE, device);
 
@@ -337,7 +247,6 @@ public class DeviceListActivity extends ListActivity {
 	    super.onCreate(savedInstanceState);
         initialization();
 
-        mThisActivity = this;
         mDevicesListAdapter = new DeviceListAdapter(this);
         for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
             if (mEdisonOnly) {
@@ -363,14 +272,6 @@ public class DeviceListActivity extends ListActivity {
 	        startActivityForResult(enableIntent, DeviceListActivity.REQUEST_ENABLE_BT);
 	        // Otherwise, setup the chat session
 	    }
-
-        if (mSerialService != null) {
-            // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mSerialService.getState() == BluetoothSerialService.STATE_NONE) {
-                // Start the Bluetooth chat services
-                mSerialService.start();
-            }
-        }
     }
 
     @Override
@@ -449,23 +350,7 @@ public class DeviceListActivity extends ListActivity {
 	        mBluetoothAdapter.cancelDiscovery();
 	    }
 
-        if (mSerialService != null)
-            mSerialService.stop();
-
 	    // Unregister broadcast listeners
 	    this.unregisterReceiver(mReceiver);
-    }
-
-    public int getConnectionState() {
-        return mSerialService.getState();
-    }
-
-    public void send(byte[] out) {
-
-        out = Utils.handleEndOfLineChars(out);
-
-        if ( out.length > 0 ) {
-            mSerialService.write( out );
-        }
     }
 }

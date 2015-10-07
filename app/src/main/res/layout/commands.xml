@@ -34,7 +34,7 @@
         android:layout_marginLeft="10dp"/>
     <TextView
         android:id="@+id/cpuSpeed"
-        android:text="500 Mhz"
+        android:text="0 Mhz"
         android:layout_below="@+id/vendorId"
         android:layout_width="wrap_content"
         android:layout_toRightOf="@+id/imageViewItem"
@@ -42,7 +42,7 @@
         android:layout_marginLeft="10dp"/>
     <TextView
         android:id="@+id/cacheSize"
-        android:text="1024 KB Cache"
+        android:text="0 KB Cache"
         android:layout_below="@+id/vendorId"
         android:layout_width="wrap_content"
         android:layout_toRightOf="@+id/cpuSpeed"
@@ -58,11 +58,19 @@
         android:layout_height="wrap_content"/>
     <ImageView
         android:id="@+id/deviceStatusIcon"
-        android:src="@drawable/ic_bluetooth_connected"
+        android:src="@drawable/ic_bluetooth_disabled"
         android:layout_alignBottom="@+id/modelName"
         android:layout_alignParentRight="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"/>
+    <TextView
+        android:id="@+id/status"
+        android:text="@string/none"
+        android:layout_below="@+id/deviceStatusIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
         android:layout_marginRight="10dp"/>
     </RelativeLayout>
     <View

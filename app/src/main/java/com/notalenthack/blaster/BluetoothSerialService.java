@@ -58,7 +58,7 @@ public class BluetoothSerialService {
 
     // Constants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    public static final int STATE_CANTCONNECT = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
@@ -94,7 +94,7 @@ public class BluetoothSerialService {
     }
 
     /**
-     * Start the chat service. Specifically start AcceptThread to begin a
+     * Start the SPP service. Specifically start AcceptThread to begin a
      * session in listening (server) mode. Called by the Activity onResume() */
     public synchronized void start() {
         if (D) Log.d(TAG, "start");
@@ -141,9 +141,9 @@ public class BluetoothSerialService {
         if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 
         // Start the thread to connect with the given device
+        setState(STATE_CONNECTING);
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
-        setState(STATE_CONNECTING);
     }
 
     /**
@@ -195,8 +195,6 @@ public class BluetoothSerialService {
         	mConnectedThread.cancel(); 
         	mConnectedThread = null;
         }
-
-        setState(STATE_NONE);
     }
 
     /**
@@ -220,7 +218,7 @@ public class BluetoothSerialService {
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private void connectionFailed() {
-        setState(STATE_NONE);
+        setState(STATE_CANTCONNECT);
 
         stop(); // stop all threads
 

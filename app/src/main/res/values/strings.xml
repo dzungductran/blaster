@@ -21,10 +21,13 @@
     <string name="not_pair">Not pair</string>
     <string name="paired">Paired</string>
     <string name="connected">Connected</string>
+    <string name="connecting">Connecting</string>
+    <string name="none">None</string>
     <string name="UNKNOWN">Unknown</string>
     <string name="cancel_str">Cancel</string>
     <string name="edison">edison</string>
     <string name="action_edison_only">Show Edison only</string>
     <string name="add_command">Add Command</string>
+    <string name="commands">Commands</string>
 
 </resources>
