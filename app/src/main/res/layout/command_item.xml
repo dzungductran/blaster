@@ -10,10 +10,10 @@
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:id="@+id/imageViewItem"
-        android:src="@drawable/ic_device"/>
+        android:src="@drawable/unknown_item"/>
     <TextView
-        android:id="@+id/deviceName"
-        android:text="device name"
+        android:id="@+id/commandName"
+        android:text="command name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/imageViewItem"
@@ -21,33 +21,31 @@
         android:layout_marginTop="10dp"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
     <TextView
-        android:id="@+id/deviceAddress"
-        android:text="device address"
+        android:id="@+id/commandLine"
+        android:text="command line"
         android:layout_toRightOf="@+id/imageViewItem"
-        android:layout_below="@+id/deviceName"
+        android:layout_below="@+id/commandName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
+    <TextView
+        android:id="@+id/cpuUsage"
+        android:text="%0 cpu"
+        android:layout_toRightOf="@+id/imageViewItem"
+        android:layout_below="@+id/commandLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
     <ImageView
-        android:id="@+id/deviceStatusIcon"
-        android:src="@drawable/ic_bluetooth_disabled"
-        android:layout_alignBottom="@+id/deviceName"
+        android:id="@+id/commandAction"
+        android:src="@drawable/ic_action_play"
         android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"/>
-
-    <TextView
-        android:id="@+id/deviceStatus"
-        android:text="Not Paired"
-        android:layout_below="@+id/deviceStatusIcon"
-        android:layout_alignBottom="@+id/deviceAddress"
-        android:layout_alignParentRight="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="10dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"/>
 
 </RelativeLayout>

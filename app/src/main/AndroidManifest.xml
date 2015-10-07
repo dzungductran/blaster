@@ -20,12 +20,16 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".DeviceListActivity"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".CommandActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/add_command"></activity>
         <activity android:name=".SplashScreen"
             android:screenOrientation="portrait"
             android:label="@string/app_name"

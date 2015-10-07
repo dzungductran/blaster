@@ -181,12 +181,19 @@ public class DeviceListActivity extends ListActivity {
            && (device.getStatus() == EdisonDevice.Status.PAIRED
              || device.getStatus() == EdisonDevice.Status.CONNECTED)) {
            if (D) Log.d(TAG, "device " + device.getName() + " bonded");
-
+/*
             mSerialService.connect(device.getBluetoothDevice());
 
             mObexClient.connect(device.getBluetoothDevice());
 
             mObexClient.browseFolder("");
+*/
+            Intent launchingIntent = new Intent(this, CommandActivity.class);
+            launchingIntent.putExtra(Constants.DEVICE_STATE, device);
+
+            if (D) Log.d(TAG, "Launch command screen: " + device.getName());
+
+            startActivity(launchingIntent);
 
         } else {
             pairDevice(device.getBluetoothDevice());

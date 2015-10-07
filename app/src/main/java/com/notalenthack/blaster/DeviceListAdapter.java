@@ -75,11 +75,6 @@ public class DeviceListAdapter extends BaseAdapter {
         mMap.clear();
     }
 
-    public void setIPAddress(int pos, String ipAddr) {
-        EdisonDevice device = mDevices.get(pos);
-        device.setIPAddress(ipAddr);
-    }
-
     public void updateStatus(int pos, EdisonDevice.Status status) {
         EdisonDevice device = mDevices.get(pos);
         device.setStatus(status);
@@ -127,7 +122,7 @@ public class DeviceListAdapter extends BaseAdapter {
         
         fields.deviceName.setText(name);
         if (name.equalsIgnoreCase(mActivity.getResources().getString(R.string.edison)) == true) {
-            fields.deviceImage.setImageResource(R.drawable.ic_edison);
+            fields.deviceImage.setImageResource(R.drawable.intel_edison_board);
         }
         fields.deviceAddress.setText(address);
 

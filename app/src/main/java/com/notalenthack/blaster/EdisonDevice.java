@@ -23,29 +23,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.bluetooth.BluetoothDevice;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by dtran on 6/30/14.
+ * Class wraps an Edison device
  */
-public class EdisonDevice {
+public class EdisonDevice implements Parcelable {
     public enum Status { PAIRED, PAIRING, CONNECTED, NONE };
 
-    public static String DEFAULT_IP = "0.0.0.0";
 
     private BluetoothDevice mDevice;
     private Status mStatus;
-    private String mIPAddress;
-    private boolean mIPSet;
 
-    public EdisonDevice(BluetoothDevice device, Status status, String ip) {
+    public EdisonDevice(BluetoothDevice device, Status status) {
         mDevice = device;
         mStatus = status;
-        mIPAddress = ip;
-        mIPSet = false;
     }
 
     public EdisonDevice(BluetoothDevice device) {
@@ -56,14 +53,39 @@ public class EdisonDevice {
             mStatus = Status.PAIRING;
         else
             mStatus = Status.NONE;
-        mIPAddress = DEFAULT_IP;     // initial ip address
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(mStatus.ordinal());
+        mDevice.writeToParcel(parcel, flags);
+    }
+
+    public static final Creator<EdisonDevice> CREATOR = new ClassLoaderCreator<EdisonDevice>() {
+        @Override
+        public EdisonDevice createFromParcel(Parcel parcel, ClassLoader classLoader) {
+            Status status = Status.values()[parcel.readInt()];
+            BluetoothDevice device = BluetoothDevice.CREATOR.createFromParcel(parcel);
+            return new EdisonDevice(device, status);
+        }
+
+        @Override
+        public EdisonDevice createFromParcel(Parcel parcel) {
+            return createFromParcel(parcel, ClassLoader.getSystemClassLoader());
+        }
+
+        @Override
+        public EdisonDevice[] newArray(int i) {
+            return new EdisonDevice[i];
+        }
+    };
 
     public BluetoothDevice getBluetoothDevice() { return mDevice; }
-
-    public String getIPAddress() {
-        return mIPAddress;
-    }
 
     public String getName() {
         return mDevice.getName();
@@ -71,13 +93,6 @@ public class EdisonDevice {
 
     public String getAddress() {
         return mDevice.getAddress();
-    }
-
-    public boolean isIPSet() { return mIPSet; }
-
-    public void setIPAddress(String ipAddress) {
-        mIPAddress = ipAddress;
-        mIPSet = true;
     }
 
     public Status getStatus() {
