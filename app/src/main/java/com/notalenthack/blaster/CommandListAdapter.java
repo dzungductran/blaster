@@ -124,7 +124,14 @@ public class CommandListAdapter extends BaseAdapter {
         
         fields.commandName.setText(name);
         fields.commandStart.setText(cmdStart);
-        fields.cpuUsage.setText(Integer.toString(cpuUsage));
+        if (command.getDisplayStatus()) {
+            StringBuffer buffer = new StringBuffer("Cpu ");
+            buffer.append(Integer.toString(cpuUsage));
+            buffer.append("%");
+            fields.cpuUsage.setText(buffer.toString());
+        } else {
+            fields.cpuUsage.setText("");
+        }
 
 		return convertView;
 	}

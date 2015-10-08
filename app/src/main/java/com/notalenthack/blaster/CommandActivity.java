@@ -23,10 +23,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,20 +35,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.GridView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notalenthack.blaster.dialog.EditCommandDialog;
-import com.notalenthack.blaster.dialog.IconPickerDialog;
 
 /**
  * Class that displays all the commands
@@ -68,6 +60,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private ImageView mDeviceStatus;
     private ImageView mBatteryStatus;
     private ListView mCmdListView;
+
+    private CommandListAdapter mListAdapter;
 
     private BluetoothSerialService mSerialService = null;
 
@@ -103,17 +97,28 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             getActionBar().setHomeButtonEnabled(true);
             getActionBar().setIcon(R.drawable.ic_action_navigation_previous_item);
 
-            mSerialService = new BluetoothSerialService(this, mHandlerBT);
-
-            mObexClient = new BluetoothObexClient(this, mHandlerBT);
-
-            mSerialService.connect(mDevice.getBluetoothDevice());
-            mObexClient.connect(mDevice.getBluetoothDevice());
-
+            startSerialServices();
+            setupCommandList();
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
         }
+    }
+
+    private void setupCommandList() {
+        mListAdapter = new CommandListAdapter(this);
+        // read from storage and initialze the adapter.
+
+        mCmdListView.setAdapter(mListAdapter);
+    }
+
+    private void startSerialServices() {
+        mSerialService = new BluetoothSerialService(this, mHandlerBT);
+
+        mObexClient = new BluetoothObexClient(this, mHandlerBT);
+
+        mSerialService.connect(mDevice.getBluetoothDevice());
+        mObexClient.connect(mDevice.getBluetoothDevice());
     }
 
     // The Handler that gets information back from the BluetoothService
@@ -122,9 +127,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-        /*            mSerialService.connect(mDevice.getBluetoothDevice());
-                    mObexClient.connect(mDevice.getBluetoothDevice());
-                    mObexClient.browseFolder(""); */
                 case Constants.MESSAGE_STATE_CHANGE_CMD:
                     if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                     switch (msg.arg1) {
@@ -260,12 +262,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         ft.addToBackStack(null);
 
         // Create and show the dialog.
-        DialogFragment newFragment = EditCommandDialog.newInstance(this);
+        DialogFragment newFragment = EditCommandDialog.newInstance(command, this);
         newFragment.show(ft, EditCommandDialog.TAG_ICON_PICKER_DIALOG);
     }
 
     // Callback when a command is created
     public void newCommand(Command command) {
         if (D) Log.d(TAG, "command is done " + command.getName());
+        mListAdapter.addCommand(command);
+        mListAdapter.notifyDataSetChanged();
     }
 }

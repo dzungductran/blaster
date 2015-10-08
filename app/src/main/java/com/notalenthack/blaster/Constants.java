@@ -36,6 +36,7 @@ public class Constants {
     public static final String TOAST = "toast";
     public static final String DEVICE_NAME = "device_name";
     public static final String DEVICE_STATE = "device_state";
+    public static final String COMMAND_STATE = "command_state";
 
     // serial command
     public static byte SERIAL_CMD_EXECUTE    = 0x1;

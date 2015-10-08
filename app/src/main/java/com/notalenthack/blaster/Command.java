@@ -38,23 +38,27 @@ public class Command implements Parcelable {
     private Status mStatus;
     private int mCpuUsage;
     private boolean mDisplayOutput;
+    private boolean mDisplayStatus;
+    private int mCommandResId;
 
     public Command() {
-       this("", "", "", Status.NOT_RUNNING, 0, false);
+       this("", R.drawable.unknown_item, "", "", Status.NOT_RUNNING, 0, false, false);
     }
 
-    public Command(String name, String cmdStart, String cmdStop,
-                   Status status, int cpu, boolean bOutput) {
+    public Command(String name, int resId, String cmdStart, String cmdStop,
+                   Status status, int cpu, boolean bOutput, boolean bStatus) {
         mName = name;
+        mCommandResId = resId;
         mCommandStart = cmdStart;
         mCommandStop = cmdStop;
         mStatus = status;
         mCpuUsage = cpu;
         mDisplayOutput = bOutput;
+        mDisplayStatus = bStatus;
     }
 
     public Command(String name, String cmdStart, String cmdStop) {
-        this(name, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false);
+        this(name, R.drawable.unknown_item, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false, false);
     }
 
     @Override
@@ -67,9 +71,11 @@ public class Command implements Parcelable {
         parcel.writeString(mName);
         parcel.writeString(mCommandStart);
         parcel.writeString(mCommandStop);
+        parcel.writeInt(mCommandResId);
         parcel.writeInt(mStatus.ordinal());
         parcel.writeInt(mCpuUsage);
-        parcel.writeByte((byte)(mDisplayOutput ? 1 : 0));
+        parcel.writeByte((byte) (mDisplayOutput ? 1 : 0));
+        parcel.writeByte((byte)(mDisplayStatus ? 1 : 0));
     }
 
     public static final Creator<Command> CREATOR = new ClassLoaderCreator<Command>() {
@@ -78,10 +84,12 @@ public class Command implements Parcelable {
             String name = parcel.readString();
             String cmdStart = parcel.readString();
             String cmdStop = parcel.readString();
+            int resId = parcel.readInt();
             Status status = Status.values()[parcel.readInt()];
             int cpu = parcel.readInt();
-            boolean b = parcel.readByte() != 0;
-            return new Command(name, cmdStart, cmdStop, status, cpu, b);
+            boolean bOutput = parcel.readByte() != 0;
+            boolean bStatus = parcel.readByte() != 0;
+            return new Command(name, resId, cmdStart, cmdStop, status, cpu, bOutput, bStatus);
         }
 
         @Override
@@ -119,7 +127,25 @@ public class Command implements Parcelable {
         return mCpuUsage;
     }
 
+    public void setName(String name) { mName = name; }
+
+    public void setStartCommand(String startCmd) { mCommandStart = startCmd; }
+
+    public void setStopCommand(String stopCmd) { mCommandStop = stopCmd; }
+
     public void setCpuUsage(int cpu) {
         mCpuUsage = cpu;
     }
+
+    public void setDisplayOutput(boolean b) { mDisplayOutput = b; }
+
+    public boolean getDisplayOutput() { return mDisplayOutput; }
+
+    public void setDisplayStatus(boolean b) { mDisplayStatus = b; }
+
+    public boolean getDisplayStatus() { return mDisplayStatus; }
+
+    public void setResourceId(int resId) { mCommandResId = resId; }
+
+    public int getResourceId() { return mCommandResId; }
 }

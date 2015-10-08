@@ -31,15 +31,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageButton;
 
 import com.notalenthack.blaster.Command;
-import com.notalenthack.blaster.ImageAdapter;
+import com.notalenthack.blaster.Constants;
 import com.notalenthack.blaster.R;
 
 /**
@@ -53,13 +51,17 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     public static final String TAG_ICON_PICKER_DIALOG = "EditCommandDialog";
 
     private Activity mActivity;
+    private EditText mNameText;
+    private EditText mStartText;
+    private EditText mStopText;
+    private ImageButton mIconButton;
 
     public interface CommandCallback {
         public void newCommand(Command command);
     }
 
     private CommandCallback mCallback = null;
-
+    private Command mCommand = null;
 
     private void showIconPicker() {
 
@@ -78,18 +80,22 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     // Callback when Icon is selected.
     public void iconSelected(long resId) {
         if (D) Log.d(TAG, "Icon with resId selected " + resId);
+        mCommand.setResourceId((int)resId);
+        mIconButton.setImageResource(mCommand.getResourceId());
     }
 
     /**
      * Create a new instance of MyDialogFragment, providing "num"
      * as an argument.
      */
-    public static EditCommandDialog newInstance(CommandCallback callback) {
+    public static EditCommandDialog newInstance(Command command, CommandCallback callback) {
         EditCommandDialog f = new EditCommandDialog();
         f.setCallback(callback);
+        f.setCommand(command);
 
-        // Save Arguments
+        // Save Arguments (not sure how to save callback)
         Bundle args = new Bundle();
+        args.putParcelable(Constants.COMMAND_STATE, command);
         f.setArguments(args);
 
         return f;
@@ -102,6 +108,13 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     // set the callback before doing anything else
     public void setCallback(CommandCallback callback) {
         mCallback = callback;
+    }
+    // set the command
+    public void setCommand(Command command) {
+        if (command == null) {
+            command = new Command();
+        }
+        mCommand = command;
     }
 
     @Override
@@ -118,12 +131,16 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
 
         getDialog().setTitle(getString(R.string.command_details));
 
-        final EditText nameText=(EditText)view.findViewById(R.id.name);
-        final EditText startText=(EditText)view.findViewById(R.id.startCommand);
-        final EditText stopText=(EditText)view.findViewById(R.id.stopCommand);
+        mNameText=(EditText)view.findViewById(R.id.name);
+        mNameText.setText(mCommand.getName());
+        mStartText=(EditText)view.findViewById(R.id.startCommand);
+        mStartText.setText(mCommand.getCommandStart());
+        mStopText=(EditText)view.findViewById(R.id.stopCommand);
+        mStopText.setText(mCommand.getCommandStop());
 
-        final ImageButton iconButton=(ImageButton)view.findViewById(R.id.commandButton);
-        iconButton.setOnClickListener(new View.OnClickListener() {
+        mIconButton=(ImageButton)view.findViewById(R.id.commandButton);
+        mIconButton.setImageResource(mCommand.getResourceId());
+        mIconButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showIconPicker();
@@ -131,22 +148,20 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         });
 
         final CheckBox outputCheck = (CheckBox)view.findViewById(R.id.captureOutput);
-        outputCheck.setChecked(false);  // default to false
+        outputCheck.setChecked(mCommand.getDisplayOutput());  // default to false
         outputCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (outputCheck.isChecked()) {
-                }
+                mCommand.setDisplayOutput(outputCheck.isChecked());
             }
         });
 
         final CheckBox statusCheck = (CheckBox)view.findViewById(R.id.displayStatus);
-        statusCheck.setChecked(false);  // default to false
+        statusCheck.setChecked(mCommand.getDisplayStatus());  // default to false
         statusCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (statusCheck.isChecked()) {
-                }
+                mCommand.setDisplayStatus(statusCheck.isChecked());
             }
         });
 
@@ -165,6 +180,12 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
             @Override
             public void onClick(View v) {
                 if (D) Log.d(TAG, "Okay out of edit details...");
+                if (mCallback != null) {
+                    mCommand.setName(mNameText.getText().toString());
+                    mCommand.setStartCommand(mStartText.getText().toString());
+                    mCommand.setStopCommand(mStopText.getText().toString());
+                    mCallback.newCommand(mCommand);
+                }
                 dismiss();
             }
         });
