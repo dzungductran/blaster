@@ -35,6 +35,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -110,6 +112,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         // read from storage and initialze the adapter.
 
         mCmdListView.setAdapter(mListAdapter);
+        mCmdListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Command command = mListAdapter.getCommand(position);
+                if (command != null) {
+                    if (D) Log.d(TAG, "command " + command.getCommandStart());
+                }
+            }
+        });
     }
 
     private void startSerialServices() {
