@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/scanning_indicator"
         android:title=""
-        android:icon="@drawable/ic_action_scan"
+        android:icon="@drawable/ic_action_refresh"
         android:orderInCategory="2"
         android:showAsAction="always" />
 

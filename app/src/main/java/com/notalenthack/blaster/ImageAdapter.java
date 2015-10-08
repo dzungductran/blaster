@@ -68,19 +68,30 @@ public class ImageAdapter extends BaseAdapter {
 
     // references to our images
     private Integer[] mThumbIds = {
-/*            R.drawable.ic_blast,
-            R.drawable.ic_youtube,
-            R.drawable.ic_blast2,
             R.drawable.unknown_item,
-            R.drawable.ic_blaster3,
-            R.drawable.ic_compass,
-            R.drawable.ic_download,
-            R.drawable.ic_edison,
-            R.drawable.ic_globe,
-            R.drawable.ic_gps,
-            R.drawable.ic_gps2,
-            R.drawable.ic_rocket,
-            R.drawable.ic_video    */
+            R.drawable.ic_sample_2,
+            R.drawable.ic_sample_3,
+            R.drawable.ic_sample_4,
+            R.drawable.ic_sample_5,
+            R.drawable.ic_sample_6,
+            R.drawable.ic_sample_7,
+            R.drawable.ic_sample_8,
+            R.drawable.ic_sample_9,
+            R.drawable.ic_sample_10,
+            R.drawable.ic_sample_11,
+            R.drawable.ic_sample_12,
+            R.drawable.ic_sample_13,
+            R.drawable.ic_sample_14,
+            R.drawable.ic_sample_15,
+            R.drawable.ic_sample_16,
+            R.drawable.ic_sample_17,
+            R.drawable.ic_sample_18,
+            R.drawable.ic_sample_19,
+            R.drawable.ic_sample_20,
+            R.drawable.ic_sample_21,
+            R.drawable.ic_sample_22,
+            R.drawable.ic_sample_23,
+            R.drawable.ic_sample_24
     };
 
     private class SquareImageView extends ImageView
