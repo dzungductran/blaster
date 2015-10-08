@@ -247,6 +247,7 @@ public class DeviceListActivity extends ListActivity {
 	    super.onCreate(savedInstanceState);
         initialization();
 
+
         mDevicesListAdapter = new DeviceListAdapter(this);
         for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
             if (mEdisonOnly) {
