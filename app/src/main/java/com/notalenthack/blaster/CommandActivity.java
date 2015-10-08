@@ -24,8 +24,9 @@ package com.notalenthack.blaster;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothSocket;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,7 +36,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -47,15 +47,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import com.notalenthack.blaster.dialog.EditCommandDialog;
+import com.notalenthack.blaster.dialog.IconPickerDialog;
 
 /**
  * Class that displays all the commands
  */
-public class CommandActivity extends Activity {
+public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback {
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
 
@@ -252,85 +250,22 @@ public class CommandActivity extends Activity {
         }
     }
 
-    // Select the icon
-    private void selectIcon() {
-        final Dialog dialog = new Dialog(this);
+    private void editCommand(Command command) {
 
-        dialog.setContentView(R.layout.icon_selection);
-        dialog.setTitle(getString(R.string.select_icon));
-        int width = getResources().getDisplayMetrics().widthPixels;
-        int columns = (width / ImageAdapter.ICON_SIZE) - 1;
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(EditCommandDialog.TAG_ICON_PICKER_DIALOG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
 
-        GridView gridview = (GridView)dialog.findViewById(R.id.gridview);
-        gridview.setNumColumns(columns);
-        gridview.setColumnWidth(ImageAdapter.ICON_SIZE);
-        gridview.setAdapter(new ImageAdapter(this));
-
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v,
-                                    int position, long id) {
-                if (D) Log.i(TAG, "Selection = " + position + " id " + id);
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        // Create and show the dialog.
+        DialogFragment newFragment = EditCommandDialog.newInstance(this);
+        newFragment.show(ft, EditCommandDialog.TAG_ICON_PICKER_DIALOG);
     }
 
-    private void editCommand(Command command) {
-        final Dialog dialog = new Dialog(this);
-
-        dialog.setContentView(R.layout.command_detail_dlg);
-        dialog.setTitle(getString(R.string.command_details));
-
-        final EditText nameText=(EditText)dialog.findViewById(R.id.name);
-        final EditText startText=(EditText)dialog.findViewById(R.id.startCommand);
-        final EditText stopText=(EditText)dialog.findViewById(R.id.stopCommand);
-
-        final ImageButton iconButton=(ImageButton)dialog.findViewById(R.id.commandButton);
-        iconButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectIcon();
-            }
-        });
-
-        final CheckBox outputCheck = (CheckBox)dialog.findViewById(R.id.captureOutput);
-        outputCheck.setChecked(false);  // default to false
-        outputCheck.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (outputCheck.isChecked()) {
-                }
-            }
-        });
-
-        final CheckBox statusCheck = (CheckBox)dialog.findViewById(R.id.displayStatus);
-        statusCheck.setChecked(false);  // default to false
-        statusCheck.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (statusCheck.isChecked()) {
-                }
-            }
-        });
-
-        final Button btnCancel=(Button)dialog.findViewById(R.id.cancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (D) Log.d(TAG, "Cancel out of edit details...");
-                dialog.dismiss();
-            }
-        });
-
-        // Okay
-        final Button okay=(Button)dialog.findViewById(R.id.okay);
-        okay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (D) Log.d(TAG, "Okay out of edit details...");
-            }
-        });
-        dialog.show();
+    // Callback when a command is created
+    public void newCommand(Command command) {
+        if (D) Log.d(TAG, "command is done " + command.getName());
     }
 }
