@@ -32,23 +32,29 @@ import android.os.Parcelable;
 public class Command implements Parcelable {
     public enum Status { RUNNING, SLEEPING, ZOMBIE, NOT_RUNNING };
 
-    private String mCommandLine;
+    private String mCommandStart;
+    private String mCommandStop;
     private String mName;
     private Status mStatus;
     private int mCpuUsage;
+    private boolean mDisplayOutput;
 
-    public Command(String name, String cmdLine, Status status, int cpu) {
-        mName = name;
-        mCommandLine = cmdLine;
-        mStatus = status;
-        mCpuUsage = cpu;
+    public Command() {
+       this("", "", "", Status.NOT_RUNNING, 0, false);
     }
 
-    public Command(String name, String cmdLine) {
+    public Command(String name, String cmdStart, String cmdStop,
+                   Status status, int cpu, boolean bOutput) {
         mName = name;
-        mCommandLine = cmdLine;
-        mStatus = Status.NOT_RUNNING;
-        mCpuUsage = 0;
+        mCommandStart = cmdStart;
+        mCommandStop = cmdStop;
+        mStatus = status;
+        mCpuUsage = cpu;
+        mDisplayOutput = bOutput;
+    }
+
+    public Command(String name, String cmdStart, String cmdStop) {
+        this(name, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false);
     }
 
     @Override
@@ -59,19 +65,23 @@ public class Command implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeString(mName);
-        parcel.writeString(mCommandLine);
+        parcel.writeString(mCommandStart);
+        parcel.writeString(mCommandStop);
         parcel.writeInt(mStatus.ordinal());
         parcel.writeInt(mCpuUsage);
+        parcel.writeByte((byte)(mDisplayOutput ? 1 : 0));
     }
 
     public static final Creator<Command> CREATOR = new ClassLoaderCreator<Command>() {
         @Override
         public Command createFromParcel(Parcel parcel, ClassLoader classLoader) {
             String name = parcel.readString();
-            String cmd = parcel.readString();
+            String cmdStart = parcel.readString();
+            String cmdStop = parcel.readString();
             Status status = Status.values()[parcel.readInt()];
             int cpu = parcel.readInt();
-            return new Command(name, cmd, status, cpu);
+            boolean b = parcel.readByte() != 0;
+            return new Command(name, cmdStart, cmdStop, status, cpu, b);
         }
 
         @Override
@@ -89,8 +99,12 @@ public class Command implements Parcelable {
         return mName;
     }
 
-    public String getCommandLine() {
-        return mCommandLine;
+    public String getCommandStart() {
+        return mCommandStart;
+    }
+
+    public String getCommandStop() {
+        return mCommandStop;
     }
 
     public Status getStatus() {

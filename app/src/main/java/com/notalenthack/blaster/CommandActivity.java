@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
@@ -33,6 +34,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -197,7 +206,11 @@ public class CommandActivity extends Activity {
             mSerialService.sendCommand(Constants.SERIAL_CMD_CLOSE, "");
             mSerialService.stop();
             finish();
+        } else if (item.getItemId() == R.id.menu_add_command) {
+            Command cmd = new Command();
+            editCommand(cmd);
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -239,4 +252,85 @@ public class CommandActivity extends Activity {
         }
     }
 
+    // Select the icon
+    private void selectIcon() {
+        final Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.icon_selection);
+        dialog.setTitle(getString(R.string.select_icon));
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int columns = (width / ImageAdapter.ICON_SIZE) - 1;
+
+        GridView gridview = (GridView)dialog.findViewById(R.id.gridview);
+        gridview.setNumColumns(columns);
+        gridview.setColumnWidth(ImageAdapter.ICON_SIZE);
+        gridview.setAdapter(new ImageAdapter(this));
+
+        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+                if (D) Log.i(TAG, "Selection = " + position + " id " + id);
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void editCommand(Command command) {
+        final Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.command_detail_dlg);
+        dialog.setTitle(getString(R.string.command_details));
+
+        final EditText nameText=(EditText)dialog.findViewById(R.id.name);
+        final EditText startText=(EditText)dialog.findViewById(R.id.startCommand);
+        final EditText stopText=(EditText)dialog.findViewById(R.id.stopCommand);
+
+        final ImageButton iconButton=(ImageButton)dialog.findViewById(R.id.commandButton);
+        iconButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectIcon();
+            }
+        });
+
+        final CheckBox outputCheck = (CheckBox)dialog.findViewById(R.id.captureOutput);
+        outputCheck.setChecked(false);  // default to false
+        outputCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (outputCheck.isChecked()) {
+                }
+            }
+        });
+
+        final CheckBox statusCheck = (CheckBox)dialog.findViewById(R.id.displayStatus);
+        statusCheck.setChecked(false);  // default to false
+        statusCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (statusCheck.isChecked()) {
+                }
+            }
+        });
+
+        final Button btnCancel=(Button)dialog.findViewById(R.id.cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (D) Log.d(TAG, "Cancel out of edit details...");
+                dialog.dismiss();
+            }
+        });
+
+        // Okay
+        final Button okay=(Button)dialog.findViewById(R.id.okay);
+        okay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (D) Log.d(TAG, "Okay out of edit details...");
+            }
+        });
+        dialog.show();
+    }
 }

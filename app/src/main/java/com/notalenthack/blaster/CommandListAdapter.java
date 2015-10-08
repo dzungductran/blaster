@@ -51,8 +51,8 @@ public class CommandListAdapter extends BaseAdapter {
 	}
 	
 	public void addCommand(Command command) {
-		if(!mMap.containsKey(command.getCommandLine())) {
-            mMap.put(command.getCommandLine(), command);
+		if(!mMap.containsKey(command.getCommandStart())) {
+            mMap.put(command.getCommandStart(), command);
 			mCommands.add(command);
 		}
 	}
@@ -105,7 +105,7 @@ public class CommandListAdapter extends BaseAdapter {
         if (convertView == null) {
         	convertView = mInflater.inflate(R.layout.command_item, null);
         	fields = new FieldReferences();
-            fields.commandLine = (TextView)convertView.findViewById(R.id.commandLine);
+            fields.commandStart = (TextView)convertView.findViewById(R.id.commandLine);
         	fields.commandName = (TextView)convertView.findViewById(R.id.commandName);
             fields.cpuUsage = (TextView)convertView.findViewById(R.id.cpuUsage);
 
@@ -117,13 +117,13 @@ public class CommandListAdapter extends BaseAdapter {
         // set proper values into the view
         Command command = mCommands.get(position);
         String name = command.getName();
-        String cmdLine = command.getCommandLine();
+        String cmdStart = command.getCommandStart();
         int cpuUsage = command.getCpuUsage();
 
         if(name == null || name.length() <= 0) name = "Unknown";
         
         fields.commandName.setText(name);
-        fields.commandLine.setText(cmdLine);
+        fields.commandStart.setText(cmdStart);
         fields.cpuUsage.setText(Integer.toString(cpuUsage));
 
 		return convertView;
@@ -131,7 +131,7 @@ public class CommandListAdapter extends BaseAdapter {
 	
 	private class FieldReferences {
         TextView commandName;
-		TextView commandLine;
+		TextView commandStart;
         TextView cpuUsage;
 	}
 }

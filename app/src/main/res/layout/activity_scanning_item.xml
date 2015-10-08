@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:id="@+id/imageViewItem"
-        android:src="@drawable/ic_device"/>
+        android:src="@drawable/ic_device_devices"/>
     <TextView
         android:id="@+id/deviceName"
         android:text="device name"

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+        <TextView
+            android:id="@+id/nameLabel"
+            android:text="Name:"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp" />
+        <EditText
+            android:id="@+id/name"
+            android:hint="Enter name"
+            android:layout_toRightOf="@+id/nameLabel"
+            android:layout_alignBaseline="@+id/nameLabel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp">
+            <requestFocus />
+        </EditText>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:src="@drawable/unknown_item"
+            android:layout_height="wrap_content"
+            android:id="@+id/commandButton"
+            android:layout_below="@+id/name"
+            android:layout_marginTop="10dp"
+            android:layout_alignStart="@+id/nameLabel" />
+
+        <TextView
+            android:id="@+id/startLabel"
+            android:text="Start Command:"
+            android:layout_below="@+id/commandButton"
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp" />
+        <EditText
+            android:id="@+id/startCommand"
+            android:hint="Enter shell command"
+            android:layout_below="@+id/startLabel"
+            android:layout_alignLeft="@+id/startLabel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/stopLabel"
+            android:text="Stop Command:"
+            android:layout_below="@+id/startCommand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/startLabel"
+            android:layout_marginTop="10dp" />
+        <EditText
+            android:id="@+id/stopCommand"
+            android:hint="Enter shell command"
+            android:layout_below="@+id/stopLabel"
+            android:layout_alignLeft="@+id/startCommand"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        </EditText>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Capture output"
+            android:id="@+id/captureOutput"
+            android:layout_below="@+id/stopCommand"
+            android:layout_marginTop="10dp"
+            android:layout_alignStart="@+id/startLabel"
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Display status"
+            android:id="@+id/displayStatus"
+            android:layout_below="@+id/captureOutput"
+            android:layout_alignStart="@+id/startLabel"
+            android:layout_marginTop="10dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/displayStatus"
+        android:layout_marginTop="10dp"
+        android:id="@+id/linearLayout">
+        <Button
+            android:id="@+id/cancel"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel" />
+        <Button
+            android:id="@+id/okay"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Done" />
+    </LinearLayout>
+
+</RelativeLayout>
