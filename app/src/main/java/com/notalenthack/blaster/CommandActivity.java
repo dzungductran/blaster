@@ -64,6 +64,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
 
+    public enum Direction { RIGHT, LEFT };
+
     private EdisonDevice mDevice;
 
     // fields in the layout
@@ -123,13 +125,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mCmdListView.setOnTouchListener(new OnSwipeTouchListener(this, mCmdListView) {
                 @Override
                 public void onSwipeRight(int pos) {
-                    showDeleteButton(pos);
+                    showDeleteButton(pos, Direction.RIGHT);
                     Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onSwipeLeft(int pos) {
-                    showDeleteButton(pos);
+                    showDeleteButton(pos, Direction.LEFT);
                     Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -142,24 +144,28 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         }
     }
 
-    private boolean showDeleteButton(int pos) {
+    private boolean showDeleteButton(int pos, Direction dir) {
         View child = mCmdListView.getChildAt(pos - mCmdListView.getFirstVisiblePosition());
         if (child != null) {
 
             ImageView delete = (ImageView) child.findViewById(R.id.delete);
             if (delete != null) {
                 if (delete.getVisibility() == View.INVISIBLE) {
-                    Animation animation =
-                            AnimationUtils.loadAnimation(this,
-                                    R.anim.slide_in_right);
-                    delete.startAnimation(animation);
-                    delete.setVisibility(View.VISIBLE);
+                    if (dir == Direction.LEFT) {
+                        Animation animation =
+                                AnimationUtils.loadAnimation(this,
+                                        R.anim.slide_in_right);
+                        delete.startAnimation(animation);
+                        delete.setVisibility(View.VISIBLE);
+                    }
                 } else {
-                    Animation animation =
-                            AnimationUtils.loadAnimation(this,
-                                    R.anim.slide_out_right);
-                    delete.startAnimation(animation);
-                    delete.setVisibility(View.INVISIBLE);
+                    if (dir == Direction.RIGHT) {
+                        Animation animation =
+                                AnimationUtils.loadAnimation(this,
+                                        R.anim.slide_out_right);
+                        delete.startAnimation(animation);
+                        delete.setVisibility(View.INVISIBLE);
+                    }
                 }
             }
             return true;
