@@ -27,6 +27,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -34,10 +35,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -70,6 +75,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private ImageView mDeviceStatus;
     private ImageView mBatteryStatus;
     private ListView mCmdListView;
+    private Activity mThisActivity;
 
     private CommandListAdapter mListAdapter;
 
@@ -83,6 +89,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mThisActivity = this;
 
         final Intent launchingIntent = getIntent();
 
@@ -110,11 +118,53 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             getActionBar().setIcon(R.drawable.ic_action_navigation_previous_item);
 
             startSerialServices();
+
+            // setup swipe listener
+            mCmdListView.setOnTouchListener(new OnSwipeTouchListener(this, mCmdListView) {
+                @Override
+                public void onSwipeRight(int pos) {
+                    showDeleteButton(pos);
+                    Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onSwipeLeft(int pos) {
+                    showDeleteButton(pos);
+                    Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             setupCommandList();
+
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
         }
+    }
+
+    private boolean showDeleteButton(int pos) {
+        View child = mCmdListView.getChildAt(pos - mCmdListView.getFirstVisiblePosition());
+        if (child != null) {
+
+            ImageView delete = (ImageView) child.findViewById(R.id.delete);
+            if (delete != null) {
+                if (delete.getVisibility() == View.INVISIBLE) {
+                    Animation animation =
+                            AnimationUtils.loadAnimation(this,
+                                    R.anim.slide_in_right);
+                    delete.startAnimation(animation);
+                    delete.setVisibility(View.VISIBLE);
+                } else {
+                    Animation animation =
+                            AnimationUtils.loadAnimation(this,
+                                    R.anim.slide_out_right);
+                    delete.startAnimation(animation);
+                    delete.setVisibility(View.INVISIBLE);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     private void setupCommandList() {
@@ -324,7 +374,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command cmd;
 
         try {
-            cmd = new Command("Download files", R.drawable.ic_sample_3, "obex", "", false, false);
+            cmd = new Command("Download files", R.drawable.ic_sample_3, "Serial OBEX FTP", "", false, false);
             defCmds.add(cmd.toJSON().toString());
             cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false);
             defCmds.add(cmd.toJSON().toString());
@@ -338,4 +388,67 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         return defCmds;
     }
+
+    // Touch listener to detect swipe
+    private class OnSwipeTouchListener implements View.OnTouchListener {
+
+        ListView list;
+        private GestureDetector gestureDetector;
+        private Context context;
+
+        public OnSwipeTouchListener(Context ctx, ListView list) {
+            gestureDetector = new GestureDetector(ctx, new GestureListener());
+            context = ctx;
+            this.list = list;
+        }
+
+        public OnSwipeTouchListener() {
+            super();
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            return gestureDetector.onTouchEvent(event);
+        }
+
+        public void onSwipeRight(int pos) {
+
+        }
+
+        public void onSwipeLeft(int pos) {
+
+        }
+
+        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+            private static final int SWIPE_THRESHOLD = 100;
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return true;
+            }
+
+            private int getPostion(MotionEvent e1) {
+                return list.pointToPosition((int) e1.getX(), (int) e1.getY());
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                float distanceX = e2.getX() - e1.getX();
+                float distanceY = e2.getY() - e1.getY();
+                if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > SWIPE_THRESHOLD
+                        && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (distanceX > 0)
+                        onSwipeRight(getPostion(e1));
+                    else
+                        onSwipeLeft(getPostion(e1));
+                    return true;
+                }
+                return false;
+            }
+
+        }
+    }
+
 }

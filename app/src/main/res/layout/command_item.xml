@@ -10,6 +10,14 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
+        android:id="@+id/edit"
+        android:src="@drawable/ic_sample_26"
+        android:visibility="invisible"/>
+    <ImageView
+        android:layout_marginLeft="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
         android:id="@+id/imageViewItem"
         android:src="@drawable/unknown_item"/>
     <TextView
@@ -48,4 +56,13 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
+    <ImageView
+        android:id="@+id/delete"
+        android:src="@drawable/ic_sample_21"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:visibility="invisible"/>
 </RelativeLayout>
