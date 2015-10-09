@@ -28,9 +28,11 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,6 +45,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notalenthack.blaster.dialog.EditCommandDialog;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class that displays all the commands
@@ -69,10 +77,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     private BluetoothObexClient mObexClient = null;
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
-    public void onCreate (Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         final Intent launchingIntent = getIntent();
@@ -86,14 +95,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         setContentView(R.layout.commands);
         // get the fields
-        mModelName = (TextView)findViewById(R.id.modelName);
-        mVendorId = (TextView)findViewById(R.id.vendorId);
-        mCpuSpeed = (TextView)findViewById(R.id.cpuSpeed);
-        mCacheSize = (TextView)findViewById(R.id.cacheSize);
-        mConnectStatus = (TextView)findViewById(R.id.status);
-        mDeviceStatus = (ImageView)findViewById(R.id.deviceStatusIcon);
-        mBatteryStatus = (ImageView)findViewById(R.id.batteryStatus);
-        mCmdListView = (ListView)findViewById(R.id.listView);;
+        mModelName = (TextView) findViewById(R.id.modelName);
+        mVendorId = (TextView) findViewById(R.id.vendorId);
+        mCpuSpeed = (TextView) findViewById(R.id.cpuSpeed);
+        mCacheSize = (TextView) findViewById(R.id.cacheSize);
+        mConnectStatus = (TextView) findViewById(R.id.status);
+        mDeviceStatus = (ImageView) findViewById(R.id.deviceStatusIcon);
+        mBatteryStatus = (ImageView) findViewById(R.id.batteryStatus);
+        mCmdListView = (ListView) findViewById(R.id.listView);
+        ;
 
         if (mDevice != null) {
             getActionBar().setHomeButtonEnabled(true);
@@ -110,6 +120,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private void setupCommandList() {
         mListAdapter = new CommandListAdapter(this);
         // read from storage and initialze the adapter.
+        restoreCommands();
 
         mCmdListView.setAdapter(mListAdapter);
         mCmdListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -139,7 +150,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Constants.MESSAGE_STATE_CHANGE_CMD:
-                    if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                     switch (msg.arg1) {
                         case BluetoothSerialService.STATE_CONNECTING:
                             mDeviceStatus.setImageResource(R.drawable.ic_bluetooth_paired);
@@ -258,8 +269,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         out = Utils.handleEndOfLineChars(out);
 
-        if ( out.length > 0 ) {
-            mSerialService.write( out );
+        if (out.length > 0) {
+            mSerialService.write(out);
         }
     }
 
@@ -282,5 +293,49 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         if (D) Log.d(TAG, "command is done " + command.getName());
         mListAdapter.addCommand(command);
         mListAdapter.notifyDataSetChanged();
+        saveCommands();
+    }
+
+    private void saveCommands() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putStringSet(mDevice.getAddress(), mListAdapter.getCommands());
+        editor.commit();
+    }
+
+    private void restoreCommands() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Get the feeds
+        Set<String> commandStrs = preferences.getStringSet(mDevice.getAddress(), getDefaultCommands());
+        for (String cmdStr : commandStrs) {
+            try {
+                mListAdapter.addCommand(new Command(new JSONObject(cmdStr)));
+            } catch (JSONException ex) {
+                Log.e(TAG, "Bad JSON " + cmdStr);
+            }
+        }
+    }
+
+    // default set of commands
+    private Set<String> getDefaultCommands() {
+        Set<String> defCmds = new HashSet<String>();
+        Command cmd;
+
+        try {
+            cmd = new Command("Download files", R.drawable.ic_sample_3, "obex", "", false, false);
+            defCmds.add(cmd.toJSON().toString());
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false);
+            defCmds.add(cmd.toJSON().toString());
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/usr/bin/video start", "/usr/bin/video stop", false, false);
+            defCmds.add(cmd.toJSON().toString());
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/usr/bin/gps start", "/usr/bin/gps stop", false, false);
+            defCmds.add(cmd.toJSON().toString());
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON object " + ex.toString());
+        }
+
+        return defCmds;
     }
 }

@@ -36,7 +36,6 @@ import java.util.HashMap;
 public class EdisonDevice implements Parcelable {
     public enum Status { PAIRED, PAIRING, CONNECTED, NONE };
 
-
     private BluetoothDevice mDevice;
     private Status mStatus;
 

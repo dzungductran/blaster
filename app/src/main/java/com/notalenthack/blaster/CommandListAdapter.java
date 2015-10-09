@@ -24,6 +24,7 @@ package com.notalenthack.blaster;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,11 +32,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public class CommandListAdapter extends BaseAdapter {
+
+    private static final String TAG = CommandListAdapter.class.getCanonicalName();
 
 	private ArrayList<Command> mCommands;
     private HashMap<String, Command> mMap;
@@ -51,17 +57,27 @@ public class CommandListAdapter extends BaseAdapter {
 	}
 	
 	public void addCommand(Command command) {
-		if(!mMap.containsKey(command.getCommandStart())) {
-            mMap.put(command.getCommandStart(), command);
-			mCommands.add(command);
-		}
+        mMap.put(command.getCommandStart(), command);   // allow for duplicate, we don't check
+        mCommands.add(command);
 	}
 
     public void addCommands(Set<Command> commands) {
         for (Command command : commands) {
             addCommand(command);
         }
+    }
 
+    public Set<String> getCommands() {
+        Set<String> commands = new HashSet<String>();
+        for (Command cmd : mCommands) {
+            try {
+                commands.add(cmd.toJSON().toString());
+            } catch (JSONException ex) {
+                Log.e(TAG, "Error parsing JSON " + cmd.getName());
+            }
+        }
+
+        return commands;
     }
 	
 	public Command getCommand(int index) {
@@ -105,6 +121,7 @@ public class CommandListAdapter extends BaseAdapter {
         if (convertView == null) {
         	convertView = mInflater.inflate(R.layout.command_item, null);
         	fields = new FieldReferences();
+            fields.imageView = (ImageView)convertView.findViewById(R.id.imageViewItem);
             fields.commandStart = (TextView)convertView.findViewById(R.id.commandLine);
         	fields.commandName = (TextView)convertView.findViewById(R.id.commandName);
             fields.cpuUsage = (TextView)convertView.findViewById(R.id.cpuUsage);
@@ -121,7 +138,8 @@ public class CommandListAdapter extends BaseAdapter {
         int cpuUsage = command.getCpuUsage();
 
         if(name == null || name.length() <= 0) name = "Unknown";
-        
+
+        fields.imageView.setImageResource(command.getResourceId());
         fields.commandName.setText(name);
         fields.commandStart.setText(cmdStart);
         if (command.getDisplayStatus()) {
@@ -137,6 +155,7 @@ public class CommandListAdapter extends BaseAdapter {
 	}
 	
 	private class FieldReferences {
+        ImageView imageView;
         TextView commandName;
 		TextView commandStart;
         TextView cpuUsage;

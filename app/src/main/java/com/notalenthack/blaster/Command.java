@@ -25,11 +25,26 @@ package com.notalenthack.blaster;
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Class wraps an Edison device
  */
 public class Command implements Parcelable {
+    private static final String TAG = Command.class.getCanonicalName();
+
+    private static final String KEY_CMD_START="cmdStart";
+    private static final String KEY_CMD_STOP="cmdStop";
+    private static final String KEY_NAME="name";
+    private static final String KEY_STATUS="status";
+    private static final String KEY_CPU_USAGE="cpuUsage";
+    private static final String KEY_DISPLAY_OUTPUT="displayOutput";
+    private static final String KEY_DISPLAY_STATUS="displayStatus";
+    private static final String KEY_RES_ID="resId";
+
     public enum Status { RUNNING, SLEEPING, ZOMBIE, NOT_RUNNING };
 
     private String mCommandStart;
@@ -57,8 +72,27 @@ public class Command implements Parcelable {
         mDisplayStatus = bStatus;
     }
 
+    public Command(String name, int resId, String cmdStart, String cmdStop, boolean bOutput, boolean bStatus) {
+        this(name, resId, cmdStart, cmdStop, Status.NOT_RUNNING, 0, bOutput, bStatus);
+    }
+
     public Command(String name, String cmdStart, String cmdStop) {
         this(name, R.drawable.unknown_item, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false, false);
+    }
+
+    public Command(JSONObject json) {
+        try {
+            mCommandStart = json.getString(KEY_CMD_START);
+            mCommandStop = json.getString(KEY_CMD_STOP);
+            mName = json.getString(KEY_NAME);
+            mStatus = Status.values()[json.getInt(KEY_STATUS)];
+            mCpuUsage = json.getInt(KEY_CPU_USAGE);
+            mDisplayOutput = json.getBoolean(KEY_DISPLAY_OUTPUT);
+            mDisplayStatus = json.getBoolean(KEY_DISPLAY_STATUS);
+            mCommandResId = json.getInt(KEY_RES_ID);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON object for Command");
+        }
     }
 
     @Override
@@ -75,7 +109,7 @@ public class Command implements Parcelable {
         parcel.writeInt(mStatus.ordinal());
         parcel.writeInt(mCpuUsage);
         parcel.writeByte((byte) (mDisplayOutput ? 1 : 0));
-        parcel.writeByte((byte)(mDisplayStatus ? 1 : 0));
+        parcel.writeByte((byte) (mDisplayStatus ? 1 : 0));
     }
 
     public static final Creator<Command> CREATOR = new ClassLoaderCreator<Command>() {
@@ -148,4 +182,59 @@ public class Command implements Parcelable {
     public void setResourceId(int resId) { mCommandResId = resId; }
 
     public int getResourceId() { return mCommandResId; }
+
+    // Quote into json key/value pair
+    private String quoteToKeyValue(String key, String value) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\"");
+        buffer.append(key);
+        buffer.append("\":\"");
+        buffer.append(value);
+        buffer.append("\"");
+        return buffer.toString();
+    }
+
+    // Quote into json key/value pair
+    private String quoteToKeyValue(String key, boolean value) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\"");
+        buffer.append(key);
+        buffer.append("\":");
+        buffer.append(value);
+        return buffer.toString();
+    }
+
+    // Quote into json key/value pair
+    private String quoteToKeyValue(String key, int value) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\"");
+        buffer.append(key);
+        buffer.append("\":");
+        buffer.append(value);
+        return buffer.toString();
+    }
+
+    // Return the string representation of this object
+    public JSONObject toJSON() throws JSONException {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("{");
+        buffer.append(quoteToKeyValue(KEY_CMD_START, mCommandStart));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_CMD_STOP, mCommandStop));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_NAME, mName));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_STATUS, mStatus.ordinal()));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_CPU_USAGE, mCpuUsage));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_DISPLAY_OUTPUT, mDisplayOutput));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_DISPLAY_STATUS, mDisplayStatus));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_RES_ID, mCommandResId));
+        buffer.append("}");
+
+        return new JSONObject(buffer.toString());
+    }
 }
