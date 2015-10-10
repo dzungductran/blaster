@@ -82,8 +82,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     private BluetoothSerialService mSerialService = null;
 
-    private BluetoothObexClient mObexClient = null;
-
     /**
      * Called when the activity is first created.
      */
@@ -191,11 +189,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     private void startSerialServices() {
         mSerialService = new BluetoothSerialService(this, mHandlerBT);
-
-        mObexClient = new BluetoothObexClient(this, mHandlerBT);
-
         mSerialService.connect(mDevice.getBluetoothDevice());
-        mObexClient.connect(mDevice.getBluetoothDevice());
     }
 
     // The Handler that gets information back from the BluetoothService
@@ -295,8 +289,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     protected void onStart() {
         super.onStart();
         mSerialService.connect(mDevice.getBluetoothDevice());
-        mObexClient.connect(mDevice.getBluetoothDevice());
-        mObexClient.browseFolder("");
     }
 
     @Override

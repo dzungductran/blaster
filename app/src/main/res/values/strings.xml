@@ -31,6 +31,6 @@
     <string name="commands">Commands</string>
     <string name="command_details">Command Details</string>
     <string name="select_icon">Select Icon</string>
-
+    <string name="browse_files">Browse Files</string>
 
 </resources>
