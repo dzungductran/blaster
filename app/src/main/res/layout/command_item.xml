@@ -1,22 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/shadow_box"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="wrap_content"
     >
-
     <ImageView
         android:layout_marginLeft="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:id="@+id/edit"
-        android:src="@drawable/ic_sample_26"
-        android:visibility="invisible"/>
-    <ImageView
-        android:layout_marginLeft="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:id="@+id/imageViewItem"
         android:src="@drawable/unknown_item"/>
@@ -39,7 +29,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
-    <ImageView
+    <ImageButton
+        android:background="@null"
         android:id="@+id/commandAction"
         android:src="@drawable/ic_action_play"
         android:layout_alignParentRight="true"
@@ -56,13 +47,27 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
-    <ImageView
-        android:id="@+id/delete"
-        android:src="@drawable/ic_sample_21"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
+    <LinearLayout
+        android:id="@+id/slideIn"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="10dp"
-        android:visibility="invisible"/>
+        android:layout_alignParentRight="true"
+        android:orientation="horizontal">
+        <ImageButton
+            android:background="@color/holo_blue_bright"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/delete"
+            android:id="@+id/edit"
+            android:src="@drawable/ic_sample_26" />
+        <ImageButton
+            android:id="@+id/delete"
+            android:background="@color/holo_blue_light"
+            android:src="@drawable/ic_sample_21"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
 </RelativeLayout>

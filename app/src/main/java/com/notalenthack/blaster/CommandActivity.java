@@ -44,6 +44,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -148,23 +149,23 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         View child = mCmdListView.getChildAt(pos - mCmdListView.getFirstVisiblePosition());
         if (child != null) {
 
-            ImageView delete = (ImageView) child.findViewById(R.id.delete);
-            if (delete != null) {
-                if (delete.getVisibility() == View.INVISIBLE) {
+            View slideIn = child.findViewById(R.id.slideIn);
+            if (slideIn != null) {
+                if (slideIn.getVisibility() == View.INVISIBLE) {
                     if (dir == Direction.LEFT) {
                         Animation animation =
                                 AnimationUtils.loadAnimation(this,
                                         R.anim.slide_in_right);
-                        delete.startAnimation(animation);
-                        delete.setVisibility(View.VISIBLE);
+                        slideIn.startAnimation(animation);
+                        slideIn.setVisibility(View.VISIBLE);
                     }
                 } else {
                     if (dir == Direction.RIGHT) {
                         Animation animation =
                                 AnimationUtils.loadAnimation(this,
                                         R.anim.slide_out_right);
-                        delete.startAnimation(animation);
-                        delete.setVisibility(View.INVISIBLE);
+                        slideIn.startAnimation(animation);
+                        slideIn.setVisibility(View.INVISIBLE);
                     }
                 }
             }
