@@ -45,6 +45,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -149,18 +150,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             if (slideIn != null) {
                 if (slideIn.getVisibility() == View.INVISIBLE) {
                     if (dir == Direction.LEFT) {
-                        Animation animation =
-                                AnimationUtils.loadAnimation(this,
-                                        R.anim.slide_in_right);
-                        slideIn.startAnimation(animation);
+                        Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
+                        slideIn.startAnimation(anim);
                         slideIn.setVisibility(View.VISIBLE);
                     }
                 } else {
                     if (dir == Direction.RIGHT) {
-                        Animation animation =
-                                AnimationUtils.loadAnimation(this,
-                                        R.anim.slide_out_right);
-                        slideIn.startAnimation(animation);
+                        Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
+                        slideIn.startAnimation(anim);
                         slideIn.setVisibility(View.INVISIBLE);
                     }
                 }
