@@ -26,7 +26,6 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,7 +43,6 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -127,13 +125,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 @Override
                 public void onSwipeRight(int pos) {
                     showDeleteButton(pos, Direction.RIGHT);
-                    Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
+                    if (D) Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onSwipeLeft(int pos) {
                     showDeleteButton(pos, Direction.LEFT);
-                    Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
+                    if (D) Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
                 }
             });
 

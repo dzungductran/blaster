@@ -30,7 +30,7 @@
         android:layout_marginBottom="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
     <ImageButton
-        android:background="@null"
+        android:background="@drawable/transparent_button"
         android:id="@+id/commandAction"
         android:src="@drawable/ic_action_play"
         android:layout_alignParentRight="true"
@@ -55,7 +55,7 @@
         android:layout_alignParentRight="true"
         android:orientation="horizontal">
         <ImageButton
-            android:background="@color/holo_blue_bright"
+            android:background="@drawable/slide_in_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -64,7 +64,7 @@
             android:src="@drawable/ic_sample_26" />
         <ImageButton
             android:id="@+id/delete"
-            android:background="@color/holo_blue_light"
+            android:background="@drawable/slide_in_button"
             android:src="@drawable/ic_sample_21"
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
