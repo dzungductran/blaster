@@ -122,13 +122,19 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mCmdListView.setOnTouchListener(new OnSwipeTouchListener(this, mCmdListView) {
                 @Override
                 public void onSwipeRight(int pos) {
-                    showDeleteButton(pos, Direction.RIGHT);
+                    Command command = mListAdapter.getCommand(pos);
+                    if (!command.isSystemCommand()) {
+                        showDeleteButton(pos, Direction.RIGHT);
+                    }
                     if (D) Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onSwipeLeft(int pos) {
-                    showDeleteButton(pos, Direction.LEFT);
+                    Command command = mListAdapter.getCommand(pos);
+                    if (!command.isSystemCommand()) {
+                        showDeleteButton(pos, Direction.LEFT);
+                    }
                     if (D) Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -360,13 +366,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command cmd;
 
         try {
-            cmd = new Command("Download files", R.drawable.ic_sample_3, "Serial OBEX FTP", "", false, false);
+            cmd = new Command("Download files", R.drawable.ic_sample_3, "Serial OBEX FTP", "", false, false, true);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false);
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false, false);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/usr/bin/video start", "/usr/bin/video stop", false, false);
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/usr/bin/video start", "/usr/bin/video stop", false, false, false);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/usr/bin/gps start", "/usr/bin/gps stop", false, false);
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/usr/bin/gps start", "/usr/bin/gps stop", false, false, false);
             defCmds.add(cmd.toJSON().toString());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
@@ -427,6 +433,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 float distanceY = e2.getY() - e1.getY();
                 if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > SWIPE_THRESHOLD
                         && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    int pos = getPostion(e1);
+                    if (pos < 0)
+                        return false;
                     if (distanceX > 0)
                         onSwipeRight(getPostion(e1));
                     else

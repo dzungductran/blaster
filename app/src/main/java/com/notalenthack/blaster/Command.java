@@ -43,6 +43,7 @@ public class Command implements Parcelable {
     private static final String KEY_CPU_USAGE="cpuUsage";
     private static final String KEY_DISPLAY_OUTPUT="displayOutput";
     private static final String KEY_DISPLAY_STATUS="displayStatus";
+    private static final String KEY_SYSTEM_CMD="systemCommand";
     private static final String KEY_RES_ID="resId";
 
     public enum Status { RUNNING, SLEEPING, ZOMBIE, NOT_RUNNING };
@@ -51,17 +52,18 @@ public class Command implements Parcelable {
     private String mCommandStop;
     private String mName;
     private Status mStatus;
+    private boolean mSystemCmd;    // System command, can't delete or edit
     private int mCpuUsage;
     private boolean mDisplayOutput;
     private boolean mDisplayStatus;
     private int mCommandResId;
 
     public Command() {
-       this("", R.drawable.unknown_item, "", "", Status.NOT_RUNNING, 0, false, false);
+       this("", R.drawable.unknown_item, "", "", Status.NOT_RUNNING, 0, false, false, false);
     }
 
     public Command(String name, int resId, String cmdStart, String cmdStop,
-                   Status status, int cpu, boolean bOutput, boolean bStatus) {
+                   Status status, int cpu, boolean bOutput, boolean bStatus, boolean bSystem) {
         mName = name;
         mCommandResId = resId;
         mCommandStart = cmdStart;
@@ -70,14 +72,16 @@ public class Command implements Parcelable {
         mCpuUsage = cpu;
         mDisplayOutput = bOutput;
         mDisplayStatus = bStatus;
+        mSystemCmd = bSystem;
     }
 
-    public Command(String name, int resId, String cmdStart, String cmdStop, boolean bOutput, boolean bStatus) {
-        this(name, resId, cmdStart, cmdStop, Status.NOT_RUNNING, 0, bOutput, bStatus);
+    public Command(String name, int resId, String cmdStart, String cmdStop, boolean bOutput,
+                   boolean bStatus, boolean bSystem) {
+        this(name, resId, cmdStart, cmdStop, Status.NOT_RUNNING, 0, bOutput, bStatus, bSystem);
     }
 
     public Command(String name, String cmdStart, String cmdStop) {
-        this(name, R.drawable.unknown_item, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false, false);
+        this(name, R.drawable.unknown_item, cmdStart, cmdStop, Status.NOT_RUNNING, 0, false, false, false);
     }
 
     public Command(JSONObject json) {
@@ -89,6 +93,7 @@ public class Command implements Parcelable {
             mCpuUsage = json.getInt(KEY_CPU_USAGE);
             mDisplayOutput = json.getBoolean(KEY_DISPLAY_OUTPUT);
             mDisplayStatus = json.getBoolean(KEY_DISPLAY_STATUS);
+            mSystemCmd = json.getBoolean(KEY_SYSTEM_CMD);
             mCommandResId = json.getInt(KEY_RES_ID);
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object for Command");
@@ -110,6 +115,7 @@ public class Command implements Parcelable {
         parcel.writeInt(mCpuUsage);
         parcel.writeByte((byte) (mDisplayOutput ? 1 : 0));
         parcel.writeByte((byte) (mDisplayStatus ? 1 : 0));
+        parcel.writeByte((byte) (mSystemCmd ? 1 : 0));
     }
 
     public static final Creator<Command> CREATOR = new ClassLoaderCreator<Command>() {
@@ -123,7 +129,8 @@ public class Command implements Parcelable {
             int cpu = parcel.readInt();
             boolean bOutput = parcel.readByte() != 0;
             boolean bStatus = parcel.readByte() != 0;
-            return new Command(name, resId, cmdStart, cmdStop, status, cpu, bOutput, bStatus);
+            boolean bSystem = parcel.readByte() != 0;
+            return new Command(name, resId, cmdStart, cmdStop, status, cpu, bOutput, bStatus, bSystem);
         }
 
         @Override
@@ -183,6 +190,8 @@ public class Command implements Parcelable {
 
     public int getResourceId() { return mCommandResId; }
 
+    public boolean isSystemCommand() { return mSystemCmd; }
+
     // Quote into json key/value pair
     private String quoteToKeyValue(String key, String value) {
         StringBuffer buffer = new StringBuffer();
@@ -231,6 +240,8 @@ public class Command implements Parcelable {
         buffer.append(quoteToKeyValue(KEY_DISPLAY_OUTPUT, mDisplayOutput));
         buffer.append(",");
         buffer.append(quoteToKeyValue(KEY_DISPLAY_STATUS, mDisplayStatus));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_SYSTEM_CMD, mSystemCmd));
         buffer.append(",");
         buffer.append(quoteToKeyValue(KEY_RES_ID, mCommandResId));
         buffer.append("}");
