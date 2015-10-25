@@ -73,7 +73,7 @@ public class FileListActivity extends Activity {
 
     private ShareActionProvider mShareActionProvider;
 
-    private BluetoothObexClient mObexClient = null;
+    private static BluetoothObexClient mObexClient = null;
 
     /**
      * Called when the activity is first created.
@@ -109,16 +109,15 @@ public class FileListActivity extends Activity {
             getActionBar().setHomeButtonEnabled(true);
             getActionBar().setIcon(R.drawable.ic_action_navigation_previous_item);
 
-            startSerialServices();
+            mObexClient = new BluetoothObexClient(this, mHandlerBT);
+
+            mObexClient.connect(mDevice.getBluetoothDevice());
+
+            mObexClient.browseFolder("");
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
         }
-    }
-
-    private void startSerialServices() {
-        mObexClient = new BluetoothObexClient(this, mHandlerBT);
-        mObexClient.connect(mDevice.getBluetoothDevice());
     }
 
     // The Handler that gets information back from the BluetoothService
@@ -186,13 +185,6 @@ public class FileListActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mObexClient.connect(mDevice.getBluetoothDevice());
-        mObexClient.browseFolder("");
     }
 
     @Override

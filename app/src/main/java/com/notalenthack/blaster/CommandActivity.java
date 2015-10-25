@@ -54,6 +54,7 @@ import com.notalenthack.blaster.dialog.EditCommandDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,6 +64,8 @@ import java.util.Set;
 public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback {
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
+
+    private static final String OBEX_FTP = "Serial OBEX FTP";
 
     public enum Direction { RIGHT, LEFT };
 
@@ -186,7 +189,16 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 Command command = mListAdapter.getCommand(position);
                 if (command != null) {
                     if (D) Log.d(TAG, "command " + command.getCommandStart());
-                    mSerialService.sendCommand(Constants.SERIAL_CMD_EXECUTE, command.getCommandStart());
+                    if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP)) {
+                        Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
+                        launchingIntent.putExtra(Constants.DEVICE_STATE, mDevice);
+
+                        if (D) Log.d(TAG, "Launch file list screen: " + mDevice.getName());
+
+                        startActivity(launchingIntent);
+                    } else {
+                        mSerialService.sendCommand(Constants.SERIAL_CMD_EXECUTE, command.getCommandStart());
+                    }
                 }
             }
         });
@@ -366,7 +378,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command cmd;
 
         try {
-            cmd = new Command("Download files", R.drawable.ic_sample_3, "Serial OBEX FTP", "", false, false, true);
+            cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP, OBEX_FTP, false, false, true);
             defCmds.add(cmd.toJSON().toString());
             cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false, false);
             defCmds.add(cmd.toJSON().toString());
