@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.notalenthack.blaster;
 
 import android.bluetooth.BluetoothAdapter;
@@ -41,24 +42,38 @@ public class BluetoothSerialService {
     private static final String TAG = "BluetoothReadService";
     private static final boolean D = true;
 
-	private static final UUID SerialPortServiceClass_UUID =
+
+    private static final UUID SerialPortServiceClass_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    // Message types sent from the BluetoothReadService Handler
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
+    public static final int MESSAGE_IPADDR = 6;
+
+    // Key names received from the BluetoothChatService Handler
+    public static final String DEVICE_NAME = "device_name";
+    public static final String DEVICE_IP = "device_ip";
+    public static final String TOAST = "toast";
 
     // Member fields
     private final BluetoothAdapter mAdapter;
-    private Handler mCallback = null;
+    private final Handler mHandler;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
     private int mState;
 
     private BluetoothDevice mDevice = null;
     private boolean mAllowInsecureConnections;
-    
+
     private Context mContext;
 
     // Constants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_CANTCONNECT = 1;     // now listening for incoming connections
+    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
@@ -70,7 +85,7 @@ public class BluetoothSerialService {
     public BluetoothSerialService(Context context, Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
-        mCallback = handler;
+        mHandler = handler;
         mContext = context;
         mAllowInsecureConnections = false;
     }
@@ -84,7 +99,7 @@ public class BluetoothSerialService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        mCallback.obtainMessage(Constants.MESSAGE_STATE_CHANGE_CMD, state, -1).sendToTarget();
+        mHandler.obtainMessage(MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
     /**
@@ -94,21 +109,21 @@ public class BluetoothSerialService {
     }
 
     /**
-     * Start the SPP service. Specifically start AcceptThread to begin a
+     * Start the chat service. Specifically start AcceptThread to begin a
      * session in listening (server) mode. Called by the Activity onResume() */
     public synchronized void start() {
         if (D) Log.d(TAG, "start");
 
         // Cancel any thread attempting to make a connection
         if (mConnectThread != null) {
-        	mConnectThread.cancel(); 
-        	mConnectThread = null;
+            mConnectThread.cancel();
+            mConnectThread = null;
         }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
-        	mConnectedThread.cancel(); 
-        	mConnectedThread = null;
+            mConnectedThread.cancel();
+            mConnectedThread = null;
         }
 
         setState(STATE_NONE);
@@ -123,7 +138,7 @@ public class BluetoothSerialService {
 
         // Already connecting or connected...
         if (mDevice != null && mDevice.getAddress().equals(device.getAddress())
-            && getState() == STATE_CONNECTED) {
+                && getState() == STATE_CONNECTED) {
             // reset state to Connected so we get a message in the UI to
             // bring up our UI for set IP address
             setState(STATE_CONNECTED);
@@ -141,9 +156,9 @@ public class BluetoothSerialService {
         if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 
         // Start the thread to connect with the given device
-        setState(STATE_CONNECTING);
         mConnectThread = new ConnectThread(device);
         mConnectThread.start();
+        setState(STATE_CONNECTING);
     }
 
     /**
@@ -156,14 +171,14 @@ public class BluetoothSerialService {
 
         // Cancel the thread that completed the connection
         if (mConnectThread != null) {
-        	mConnectThread.cancel(); 
-        	mConnectThread = null;
+            mConnectThread.cancel();
+            mConnectThread = null;
         }
 
         // Cancel any thread currently running a connection
         if (mConnectedThread != null) {
-        	mConnectedThread.cancel(); 
-        	mConnectedThread = null;
+            mConnectedThread.cancel();
+            mConnectedThread = null;
         }
 
         // Start the thread to manage the connection and perform transmissions
@@ -171,11 +186,11 @@ public class BluetoothSerialService {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
-        Message msg = mCallback.obtainMessage(Constants.MESSAGE_DEVICE_NAME_CMD);
+        Message msg = mHandler.obtainMessage(MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.DEVICE_NAME, device.getName());
+        bundle.putString(DEVICE_NAME, device.getName());
         msg.setData(bundle);
-        mCallback.sendMessage(msg);
+        mHandler.sendMessage(msg);
 
         setState(STATE_CONNECTED);
     }
@@ -187,14 +202,16 @@ public class BluetoothSerialService {
         if (D) Log.d(TAG, "stop");
 
         if (mConnectThread != null) {
-        	mConnectThread.cancel(); 
-        	mConnectThread = null;
+            mConnectThread.cancel();
+            mConnectThread = null;
         }
 
         if (mConnectedThread != null) {
-        	mConnectedThread.cancel(); 
-        	mConnectedThread = null;
+            mConnectedThread.cancel();
+            mConnectedThread = null;
         }
+
+        setState(STATE_NONE);
     }
 
     /**
@@ -213,12 +230,12 @@ public class BluetoothSerialService {
         // Perform the write unsynchronized
         r.write(out);
     }
-    
+
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private void connectionFailed() {
-        setState(STATE_CANTCONNECT);
+        setState(STATE_NONE);
 
         stop(); // stop all threads
 
@@ -240,11 +257,11 @@ public class BluetoothSerialService {
 
     private void sendMessageToast(String msgStr) {
         // Send a failure message back to the Activity
-        Message msg = mCallback.obtainMessage(Constants.MESSAGE_TOAST_CMD);
+        Message msg = mHandler.obtainMessage(MESSAGE_TOAST);
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.TOAST, msgStr );
+        bundle.putString(TOAST, msgStr );
         msg.setData(bundle);
-        mCallback.sendMessage(msg);
+        mHandler.sendMessage(msg);
     }
 
     /**
@@ -263,12 +280,12 @@ public class BluetoothSerialService {
             // Get a BluetoothSocket for a connection with the
             // given BluetoothDevice
             try {
-            	if ( mAllowInsecureConnections ) {
+                if ( mAllowInsecureConnections ) {
                     tmp = device.createInsecureRfcommSocketToServiceRecord( SerialPortServiceClass_UUID );
-            	}
-            	else {
-            		tmp = device.createRfcommSocketToServiceRecord( SerialPortServiceClass_UUID );
-            	}
+                }
+                else {
+                    tmp = device.createRfcommSocketToServiceRecord( SerialPortServiceClass_UUID );
+                }
             } catch (Exception e) {
                 Log.e(TAG, "create() failed", e);
             }
@@ -327,7 +344,7 @@ public class BluetoothSerialService {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
-        
+
 
         public ConnectedThread(BluetoothSocket socket) {
             Log.d(TAG, "create ConnectedThread");
@@ -389,7 +406,7 @@ public class BluetoothSerialService {
                 mmOutStream.flush();
 
                 // Share the sent message back to the UI Activity
-                mCallback.obtainMessage(Constants.MESSAGE_WRITE_CMD, buffer.length, -1, buffer)
+                mHandler.obtainMessage(MESSAGE_WRITE, buffer.length, -1, buffer)
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
@@ -404,24 +421,35 @@ public class BluetoothSerialService {
             }
         }
     }
-    
+
     public void setAllowInsecureConnections( boolean allowInsecureConnections ) {
-    	mAllowInsecureConnections = allowInsecureConnections;
+        mAllowInsecureConnections = allowInsecureConnections;
     }
 
     public boolean getAllowInsecureConnections() {
-    	return mAllowInsecureConnections;
+        return mAllowInsecureConnections;
     }
 
-    /* Protocol between client and server
+    // commands between Client and Server. Server is on Edison side and
+    public static byte SERIAL_CMD_START  = 0x1;
+    public static byte SERIAL_CMD_STATUS = 0x2;
+    public static byte SERIAL_CMD_ERROR  = 0x3;
+    public static byte SERIAL_CMD_KILL   = 0x4;
+    public static byte SERIAL_CMD_STOP   = 0x5;
+    public static byte SERIAL_CMD_CLOSE  = 0xF;
+
+
     /*
      * byte 1 = command
-     * byte 2-n = command string
+     * byte 2 = NONE
+     * byte 3,4,5,6 = 6
+     * byte 7-12 = command string
      */
     public void sendCommand(byte cmd, String cmdStr) {
         int len = cmdStr.length();
-        byte[] out = ByteBuffer.allocate(1+len)
+        byte[] out = ByteBuffer.allocate(6+len)
                 .put(cmd)                         // 1 byte for command
+                .put(Utils.intToByteArray(len))   // 4 bytes for len of cmdStr
                 .put(cmdStr.getBytes()).array();  // cmdStr
 
         write( out );

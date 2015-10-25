@@ -123,6 +123,8 @@ public class DeviceListAdapter extends BaseAdapter {
         fields.deviceName.setText(name);
         if (name.equalsIgnoreCase(mActivity.getResources().getString(R.string.edison)) == true) {
             fields.deviceImage.setImageResource(R.drawable.intel_edison_board);
+        } else {
+            fields.deviceImage.setImageResource(R.drawable.ic_device_devices);
         }
         fields.deviceAddress.setText(address);
 

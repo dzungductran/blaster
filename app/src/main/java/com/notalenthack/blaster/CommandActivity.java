@@ -81,7 +81,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     private CommandListAdapter mListAdapter;
 
-    private BluetoothSerialService mSerialService = null;
+    private static BluetoothSerialService mSerialService = null;
 
     /**
      * Called when the activity is first created.
@@ -110,14 +110,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         mConnectStatus = (TextView) findViewById(R.id.status);
         mDeviceStatus = (ImageView) findViewById(R.id.deviceStatusIcon);
         mBatteryStatus = (ImageView) findViewById(R.id.batteryStatus);
-        mCmdListView = (ListView) findViewById(R.id.listView);
-        ;
+        mCmdListView = (ListView) findViewById(R.id.listView);;
 
         if (mDevice != null) {
             getActionBar().setHomeButtonEnabled(true);
             getActionBar().setIcon(R.drawable.ic_action_navigation_previous_item);
 
-            startSerialServices();
+            mSerialService = new BluetoothSerialService(this, mHandlerBT);
 
             // setup swipe listener
             mCmdListView.setOnTouchListener(new OnSwipeTouchListener(this, mCmdListView) {
@@ -135,6 +134,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             });
 
             setupCommandList();
+
+            mSerialService.connect(mDevice.getBluetoothDevice());
 
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
@@ -179,14 +180,10 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 Command command = mListAdapter.getCommand(position);
                 if (command != null) {
                     if (D) Log.d(TAG, "command " + command.getCommandStart());
+                    mSerialService.sendCommand(Constants.SERIAL_CMD_EXECUTE, command.getCommandStart());
                 }
             }
         });
-    }
-
-    private void startSerialServices() {
-        mSerialService = new BluetoothSerialService(this, mHandlerBT);
-        mSerialService.connect(mDevice.getBluetoothDevice());
     }
 
     // The Handler that gets information back from the BluetoothService
@@ -209,7 +206,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                             break;
 
                         case BluetoothSerialService.STATE_NONE:
-                        case BluetoothSerialService.STATE_CANTCONNECT:
+                        //case BluetoothSerialService.STATE_CANTCONNECT:
                             mDeviceStatus.setImageResource(R.drawable.ic_bluetooth_disabled);
                             mConnectStatus.setText(R.string.none);
                             break;
@@ -282,11 +279,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mSerialService.connect(mDevice.getBluetoothDevice());
-    }
 
     @Override
     public synchronized void onResume() {

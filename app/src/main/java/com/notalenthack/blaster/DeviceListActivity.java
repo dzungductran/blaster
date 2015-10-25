@@ -110,7 +110,7 @@ public class DeviceListActivity extends ListActivity {
         }
     }
 
-    private void stopScanning() {
+    private synchronized void stopScanning() {
         mScanning = false;
         if (mScanMenuItem != null)
             mScanMenuItem.setTitle(R.string.start_scan);
@@ -126,7 +126,7 @@ public class DeviceListActivity extends ListActivity {
     /**
      * Start device discover with the BluetoothAdapter
      */
-    private void startScanning() {
+    private synchronized void startScanning() {
         mScanning = true;
         mDevicesListAdapter.clearList();
         for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
