@@ -46,19 +46,6 @@ public class BluetoothSerialService {
     private static final UUID SerialPortServiceClass_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    // Message types sent from the BluetoothReadService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_WRITE = 3;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
-    public static final int MESSAGE_IPADDR = 6;
-
-    // Key names received from the BluetoothChatService Handler
-    public static final String DEVICE_NAME = "device_name";
-    public static final String DEVICE_IP = "device_ip";
-    public static final String TOAST = "toast";
-
     // Member fields
     private final BluetoothAdapter mAdapter;
     private final Handler mHandler;
@@ -99,7 +86,7 @@ public class BluetoothSerialService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        mHandler.obtainMessage(Constants.MESSAGE_STATE_CHANGE_CMD, state, -1).sendToTarget();
     }
 
     /**
@@ -186,9 +173,9 @@ public class BluetoothSerialService {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
-        Message msg = mHandler.obtainMessage(MESSAGE_DEVICE_NAME);
+        Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_NAME_CMD);
         Bundle bundle = new Bundle();
-        bundle.putString(DEVICE_NAME, device.getName());
+        bundle.putString(Constants.KEY_DEVICE_NAME, device.getName());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
@@ -257,9 +244,9 @@ public class BluetoothSerialService {
 
     private void sendMessageToast(String msgStr) {
         // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(MESSAGE_TOAST);
+        Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST_CMD);
         Bundle bundle = new Bundle();
-        bundle.putString(TOAST, msgStr );
+        bundle.putString(Constants.KEY_TOAST, msgStr );
         msg.setData(bundle);
         mHandler.sendMessage(msg);
     }
@@ -406,7 +393,7 @@ public class BluetoothSerialService {
                 mmOutStream.flush();
 
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(MESSAGE_WRITE, buffer.length, -1, buffer)
+                mHandler.obtainMessage(Constants.MESSAGE_WRITE_CMD, buffer.length, -1, buffer)
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
@@ -429,15 +416,6 @@ public class BluetoothSerialService {
     public boolean getAllowInsecureConnections() {
         return mAllowInsecureConnections;
     }
-
-    // commands between Client and Server. Server is on Edison side and
-    public static byte SERIAL_CMD_START  = 0x1;
-    public static byte SERIAL_CMD_STATUS = 0x2;
-    public static byte SERIAL_CMD_ERROR  = 0x3;
-    public static byte SERIAL_CMD_KILL   = 0x4;
-    public static byte SERIAL_CMD_STOP   = 0x5;
-    public static byte SERIAL_CMD_CLOSE  = 0xF;
-
 
     /*
      * byte 1 = command

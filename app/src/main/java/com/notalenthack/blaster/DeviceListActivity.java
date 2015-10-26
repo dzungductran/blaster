@@ -99,7 +99,7 @@ public class DeviceListActivity extends ListActivity {
            if (D) Log.d(TAG, "device " + device.getName() + " bonded");
 
             Intent launchingIntent = new Intent(this, CommandActivity.class);
-            launchingIntent.putExtra(Constants.DEVICE_STATE, device);
+            launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, device);
 
             if (D) Log.d(TAG, "Launch command screen: " + device.getName());
 

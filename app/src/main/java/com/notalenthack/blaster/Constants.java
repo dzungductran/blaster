@@ -32,15 +32,21 @@ public class Constants {
     public static final int MESSAGE_WRITE_CMD = 3;
     public static final int MESSAGE_DEVICE_NAME_CMD = 4;
     public static final int MESSAGE_TOAST_CMD = 5;
+    public static final int MESSAGE_BROWSE_DONE_CMD = 6;
 
-    public static final String TOAST = "toast";
-    public static final String DEVICE_NAME = "device_name";
-    public static final String DEVICE_STATE = "device_state";
-    public static final String COMMAND_STATE = "command_state";
+    public static final String KEY_TOAST = "toast";
+    public static final String KEY_DEVICE_NAME = "device_name";
+    public static final String KEY_DEVICE_STATE = "device_state";
+    public static final String KEY_COMMAND_STATE = "command_state";
+    public static final String KEY_FILE_ENTRIES = "file_entries";
 
     // serial command
-    public static byte SERIAL_CMD_EXECUTE    = 0x1;
-    public static byte SERIAL_CMD_STATUS     = 0x2;
-    public static byte SERIAL_CMD_ERROR      = 0x3;
-    public static byte SERIAL_CMD_CLOSE      = 0xF;
+    // commands between Client and Server. Server is on Edison side and
+    public static byte SERIAL_CMD_START  = 0x1;
+    public static byte SERIAL_CMD_STATUS = 0x2;
+    public static byte SERIAL_CMD_ERROR  = 0x3;
+    public static byte SERIAL_CMD_KILL   = 0x4;
+    public static byte SERIAL_CMD_STOP   = 0x5;
+    public static byte SERIAL_CMD_CLOSE  = 0xF;
+
 }

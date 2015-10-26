@@ -40,6 +40,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.obex.ClientSession;
@@ -244,10 +246,10 @@ public class BluetoothObexClient {
             }
             fos.close();
             is.close();
-            System.out.println("File stored in: " + f.getAbsolutePath());
+            Log.i(TAG, "File stored in: " + f.getAbsolutePath());
             return true;
         }catch(Exception e){
-            System.out.println("Exception " + e.toString());
+            Log.e(TAG, "Exception " + e.toString());
             return false;
         }
     }
@@ -272,15 +274,20 @@ public class BluetoothObexClient {
             HeaderSet header2 = new HeaderSet();
             header2.setHeader(HeaderSet.TYPE, "x-obex/folder-listing");
             Operation op = clientSession.get(header2);
+            ObexDirParser parser = new ObexDirParser();
+            ArrayList<FileEntry> list = parser.parse(op.openInputStream());
+            /*
             BufferedReader br = new BufferedReader(new InputStreamReader(op.openInputStream()));
             String line;
             String xmlString = "";
             while ((line = br.readLine()) != null) {
                 xmlString = xmlString + line + "\n";
             }
+            Log.i(TAG, "Obex XML String:\n" + xmlString);
             br.close();
+            */
             op.close();
-            System.out.println("Obex XML String:\n" + xmlString);
+            sendFileList(list);
             return true;
         }catch(Exception e){
             System.out.println("Exception " + e.toString());
@@ -304,12 +311,20 @@ public class BluetoothObexClient {
         mHandler.sendMessage(msg);
     }
 
+    private void sendFileList(ArrayList<FileEntry> entries) {
+        Message msg = mCallback.obtainMessage(Constants.MESSAGE_BROWSE_DONE_CMD);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList(Constants.KEY_FILE_ENTRIES, entries);
+        msg.setData(bundle);
+        mCallback.sendMessage(msg);
+    }
+
     private void sendMessageToast(String msgStr) {
         // Send a failure message back to the Activity
         Message msg = mCallback.obtainMessage(Constants.MESSAGE_TOAST_CMD);
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.TOAST, msgStr );
+        bundle.putString(Constants.KEY_TOAST, msgStr );
         msg.setData(bundle);
-        mHandler.sendMessage(msg);
+        mCallback.sendMessage(msg);
     }
 }

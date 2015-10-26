@@ -45,7 +45,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,7 +53,6 @@ import com.notalenthack.blaster.dialog.EditCommandDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -99,9 +97,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         // Retrieve the Query Type and Position from the intent or bundle
         if (savedInstanceState != null) {
-            mDevice = savedInstanceState.getParcelable(Constants.DEVICE_STATE);
+            mDevice = savedInstanceState.getParcelable(Constants.KEY_DEVICE_STATE);
         } else if (launchingIntent != null) {
-            mDevice = launchingIntent.getParcelableExtra(Constants.DEVICE_STATE);
+            mDevice = launchingIntent.getParcelableExtra(Constants.KEY_DEVICE_STATE);
         }
 
         setContentView(R.layout.commands);
@@ -191,13 +189,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                     if (D) Log.d(TAG, "command " + command.getCommandStart());
                     if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP)) {
                         Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
-                        launchingIntent.putExtra(Constants.DEVICE_STATE, mDevice);
+                        launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, mDevice);
 
                         if (D) Log.d(TAG, "Launch file list screen: " + mDevice.getName());
 
                         startActivity(launchingIntent);
                     } else {
-                        mSerialService.sendCommand(Constants.SERIAL_CMD_EXECUTE, command.getCommandStart());
+                        mSerialService.sendCommand(Constants.SERIAL_CMD_START, command.getCommandStart());
                     }
                 }
             }
@@ -247,14 +245,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
                 case Constants.MESSAGE_DEVICE_NAME_CMD:
                     // save the connected device's name
-                    String deviceName = msg.getData().getString(Constants.DEVICE_NAME);
+                    String deviceName = msg.getData().getString(Constants.KEY_DEVICE_NAME);
                     Toast.makeText(getApplicationContext(), getString(R.string.toast_connected_to) + " "
                             + deviceName, Toast.LENGTH_SHORT).show();
                     break;
 
                 case Constants.MESSAGE_TOAST_CMD:
                     Toast.makeText(getApplicationContext(),
-                            msg.getData().getString(Constants.TOAST), Toast.LENGTH_LONG).show();
+                            msg.getData().getString(Constants.KEY_TOAST), Toast.LENGTH_LONG).show();
                     break;
             }
         }
@@ -263,14 +261,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         if (mDevice != null) {
-            savedInstanceState.putParcelable(Constants.DEVICE_STATE, mDevice);
+            savedInstanceState.putParcelable(Constants.KEY_DEVICE_STATE, mDevice);
         }
         super.onSaveInstanceState(savedInstanceState);
     }
 
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mDevice = savedInstanceState.getParcelable(Constants.DEVICE_STATE);
+        mDevice = savedInstanceState.getParcelable(Constants.KEY_DEVICE_STATE);
     }
 
     @Override

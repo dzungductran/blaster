@@ -95,7 +95,7 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
 
         // Save Arguments (not sure how to save callback)
         Bundle args = new Bundle();
-        args.putParcelable(Constants.COMMAND_STATE, command);
+        args.putParcelable(Constants.KEY_COMMAND_STATE, command);
         f.setArguments(args);
 
         return f;

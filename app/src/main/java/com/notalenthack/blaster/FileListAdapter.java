@@ -33,13 +33,14 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Adapter for loading files
  */
 public class FileListAdapter extends BaseAdapter
 {
-    private List<Item> items = new ArrayList<Item>();
+    private List<FileEntry> items = new ArrayList<FileEntry>();
     private LayoutInflater inflater;
 
     public FileListAdapter(Activity par)
@@ -61,43 +62,41 @@ public class FileListAdapter extends BaseAdapter
     @Override
     public long getItemId(int i)
     {
-        return items.get(i).drawableId;
+        return i;
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup)
+    public View getView(int position, View convertView, ViewGroup viewGroup)
     {
-        View v = view;
-        ImageView picture;
-        TextView name;
+        FieldReferences fields;
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.file_item, viewGroup, false);
+            fields = new FieldReferences();
+            fields.picture = (ImageView)convertView.findViewById(R.id.picture);
+            fields.name = (TextView)convertView.findViewById(R.id.text);
 
-        if(v == null)
-        {
-            v = inflater.inflate(R.layout.file_item, viewGroup, false);
-            v.setTag(R.id.picture, v.findViewById(R.id.picture));
-            v.setTag(R.id.text, v.findViewById(R.id.text));
+            convertView.setTag(fields);
+        } else {
+            fields = (FieldReferences) convertView.getTag();
         }
 
-        picture = (ImageView)v.getTag(R.id.picture);
-        name = (TextView)v.getTag(R.id.text);
+        FileEntry entry = (FileEntry)getItem(position);
 
-        Item item = (Item)getItem(i);
+        fields.picture.setImageResource(entry.drawableId);;
+        fields.name.setText(entry.name);
 
-        picture.setImageResource(item.drawableId);
-        name.setText(item.name);
-
-        return v;
+        return convertView;
     }
 
-    private class Item
-    {
-        final String name;
-        final int drawableId;
+    private class FieldReferences {
+        ImageView picture;
+        TextView name;
+    }
 
-        Item(String name, int drawableId)
-        {
-            this.name = name;
-            this.drawableId = drawableId;
+    public void addFileEntries(ArrayList<FileEntry> entries) {
+        items.clear();  // remove old entries
+        for (FileEntry entry : entries) {
+            items.add(entry);
         }
     }
 }

@@ -55,7 +55,9 @@ import com.notalenthack.blaster.dialog.EditCommandDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -86,9 +88,9 @@ public class FileListActivity extends Activity {
 
         // Retrieve the Query Type and Position from the intent or bundle
         if (savedInstanceState != null) {
-            mDevice = savedInstanceState.getParcelable(Constants.DEVICE_STATE);
+            mDevice = savedInstanceState.getParcelable(Constants.KEY_DEVICE_STATE);
         } else if (launchingIntent != null) {
-            mDevice = launchingIntent.getParcelableExtra(Constants.DEVICE_STATE);
+            mDevice = launchingIntent.getParcelableExtra(Constants.KEY_DEVICE_STATE);
         }
 
         setContentView(R.layout.list_files);
@@ -129,8 +131,14 @@ public class FileListActivity extends Activity {
                 case Constants.MESSAGE_TOAST_CMD:
                     if (D) Log.i(TAG, "MESSAGE_TOAST_CMD: " + msg.arg1);
                     Toast.makeText(getApplicationContext(),
-                            msg.getData().getString(Constants.TOAST), Toast.LENGTH_LONG).show();
+                            msg.getData().getString(Constants.KEY_TOAST), Toast.LENGTH_LONG).show();
                     break;
+
+                case Constants.MESSAGE_BROWSE_DONE_CMD:
+                    if (D) Log.i(TAG, "Done browsing get file list");
+                    ArrayList<FileEntry> entries = msg.getData().getParcelableArrayList(Constants.KEY_FILE_ENTRIES);
+                    mListAdapter.addFileEntries(entries);
+                    mListAdapter.notifyDataSetChanged();
             }
         }
     };
@@ -138,14 +146,14 @@ public class FileListActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         if (mDevice != null) {
-            savedInstanceState.putParcelable(Constants.DEVICE_STATE, mDevice);
+            savedInstanceState.putParcelable(Constants.KEY_DEVICE_STATE, mDevice);
         }
         super.onSaveInstanceState(savedInstanceState);
     }
 
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mDevice = savedInstanceState.getParcelable(Constants.DEVICE_STATE);
+        mDevice = savedInstanceState.getParcelable(Constants.KEY_DEVICE_STATE);
     }
 
     @Override
