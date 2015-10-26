@@ -18,4 +18,18 @@
     <style name="nowCardStyle">
         <item name="android:background">@drawable/search_bg_shadow</item>
     </style>
+
+    <style name="autoscroll">
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:scrollHorizontally">true</item>
+    </style>
+
+    <style name="ellipmid">
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">middle</item>
+    </style>
 </resources>
