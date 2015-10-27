@@ -39,6 +39,9 @@ public class Constants {
     public static final String KEY_DEVICE_STATE = "device_state";
     public static final String KEY_COMMAND_STATE = "command_state";
     public static final String KEY_FILE_ENTRIES = "file_entries";
+    public static final String KEY_FILE_NAME = "file_name";
+    public static final String KEY_FOLDER_NAME = "folder_name";
+    public static final String KEY_FILE_SIZE = "file_size";
 
     // serial command
     // commands between Client and Server. Server is on Edison side and

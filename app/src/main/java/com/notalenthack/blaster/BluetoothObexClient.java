@@ -29,6 +29,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -97,10 +98,14 @@ public class BluetoothObexClient {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_BROWSE_FOLDER:
-                    handleBrowse((String) msg.obj);
+                    String folder = msg.getData().getString(Constants.KEY_FOLDER_NAME);
+                    handleBrowse(folder);
                     break;
                 case MSG_DOWNLOAD_FILE:
-                    handleDownload((String) msg.obj);
+                    folder = msg.getData().getString(Constants.KEY_FOLDER_NAME);
+                    String file = msg.getData().getString(Constants.KEY_FILE_NAME);
+                    long expectedSize = msg.getData().getLong(Constants.KEY_FILE_SIZE);
+                    handleDownload(folder, file, expectedSize);
                 default:
                     break;
             }
@@ -220,7 +225,7 @@ public class BluetoothObexClient {
         }
     }
 
-    private boolean handleDownload(String file) {
+    private boolean handleDownload(String folder, String file, long expectedSize) {
         ClientSession clientSession = mClientSession;
         if ((!mConnected) || (clientSession == null) || (mCurrentFolder == null)) {
             Log.w(TAG, "sendEvent after disconnect:" + mConnected);
@@ -228,8 +233,29 @@ public class BluetoothObexClient {
         }
         try {
             //Go the desired folder
+            // Create file on disk
+            File root = Environment.getExternalStorageDirectory();
+            String path = root.getAbsolutePath();
+            if (!folder.isEmpty()) {
+                path += File.separator + folder;
+                File dir = new File(path);
+                if (!dir.exists()) {
+                    if (!dir.mkdir()) {
+                        sendMessageToast("Can't create directory: " + path);
+                        return false;
+                    }
+                }
+            }
+            path += File.separator + file;
+            File f = new File(path);
+            if (f.exists() && f.length() == expectedSize) {
+                sendMessageToast("File " + path + " already existed");
+                return true;
+            }
+            f.createNewFile();
+
             HeaderSet header = new HeaderSet();
-            header.setHeader(HeaderSet.NAME, mCurrentFolder); //open the folder
+            header.setHeader(HeaderSet.NAME, ""); //open the folder
             HeaderSet result = clientSession.setPath(header, false, false);//if the third option is set to true
             if (result.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
                 Log.e(TAG, "Bad setPath " + result.getResponseCode());
@@ -240,7 +266,7 @@ public class BluetoothObexClient {
             header.setHeader(HeaderSet.NAME, file);
             Operation op = clientSession.get(header);
             InputStream is = op.openInputStream();
-            File f = new File(file);
+
             FileOutputStream fos = new FileOutputStream (f);
             byte b[] = new byte[1000];
             int len;
@@ -249,6 +275,7 @@ public class BluetoothObexClient {
             }
             fos.close();
             is.close();
+            op.close();
             Log.i(TAG, "File stored in: " + f.getAbsolutePath());
             return true;
         }catch(Exception e){
@@ -262,6 +289,11 @@ public class BluetoothObexClient {
     // Probably need to make sure directory permission allow for create/change directory
     private boolean handleBrowse(String folder) {
         ClientSession clientSession = mClientSession;
+        boolean upLevel = false;
+        if (folder.equals("..")) {
+            upLevel = true;
+            folder = "";
+        }
         mCurrentFolder = folder;
         if ((!mConnected) || (clientSession == null) || (mCurrentFolder == null)) {
             Log.w(TAG, "sendEvent after disconnect:" + mConnected);
@@ -271,7 +303,7 @@ public class BluetoothObexClient {
             //Go the desired folder
             HeaderSet header = new HeaderSet();
             header.setHeader(HeaderSet.NAME, mCurrentFolder);
-            HeaderSet result = clientSession.setPath(header, false, false);//if the third option is set to true
+            HeaderSet result = clientSession.setPath(header, upLevel, false);//if the third option is set to true
             if (result.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
                 Log.e(TAG, "Bad setPath " + result.getResponseCode());
                 sendMessageToast("Bad setPath " + result.getResponseCode());
@@ -304,20 +336,23 @@ public class BluetoothObexClient {
     public void browseFolder(String folder) {
         Message msg = new Message();
         msg.what = MSG_BROWSE_FOLDER;
-        msg.obj = folder;
-
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.KEY_FOLDER_NAME, folder);
+        msg.setData(bundle);
         mHandler.sendMessage(msg);
     }
 
-    public void downloadFile(String file) {
+    public void downloadFile(String folder, String file, long expectedSize) {
         Message msg = new Message();
         msg.what = MSG_DOWNLOAD_FILE;
-        msg.obj = file;
-
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.KEY_FILE_NAME, file);
+        bundle.putString(Constants.KEY_FOLDER_NAME, folder);
+        bundle.putLong(Constants.KEY_FILE_SIZE, expectedSize);
+        msg.setData(bundle);
         mHandler.sendMessage(msg);
     }
 
-    // Maybe we should use msg.obj instead of bundle?
     private void sendFileList(ArrayList<FileEntry> entries) {
         Message msg = mCallback.obtainMessage(Constants.MESSAGE_BROWSE_DONE_CMD);
         Bundle bundle = new Bundle();

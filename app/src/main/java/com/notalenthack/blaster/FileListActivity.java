@@ -55,6 +55,7 @@ import com.notalenthack.blaster.dialog.EditCommandDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +77,10 @@ public class FileListActivity extends Activity {
     private ShareActionProvider mShareActionProvider;
 
     private static BluetoothObexClient mObexClient = null;
+
+    private String mCurFolder = "";
+
+    private Menu menu;
 
     /**
      * Called when the activity is first created.
@@ -103,7 +108,23 @@ public class FileListActivity extends Activity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                setShareIntent("/url_here");
+                if (D) Log.d(TAG, "position " + position);
+                FileEntry entry = (FileEntry)mListAdapter.getItem(position);
+
+                // Folder so we need to browse into it
+                if (entry.bFolder) {
+                    if (mCurFolder.isEmpty())
+                        mCurFolder = entry.name;
+                    else
+                        mCurFolder += File.separator + entry.name;
+
+                    setTitle(mCurFolder);
+
+                    mObexClient.browseFolder(entry.name);
+                } else {
+                    mObexClient.downloadFile(mCurFolder, entry.name, entry.size);
+                    //setShareIntent("/url_here");
+                }
             }
         });
 
@@ -116,7 +137,7 @@ public class FileListActivity extends Activity {
             mObexClient.connect(mDevice.getBluetoothDevice());
 
             // Browse the top most folder first
-            mObexClient.browseFolder("");
+            mObexClient.browseFolder(mCurFolder);
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
@@ -167,6 +188,8 @@ public class FileListActivity extends Activity {
         // Fetch and store ShareActionProvider
         mShareActionProvider = (ShareActionProvider) item.getActionProvider();
 
+        this.menu = menu;
+
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return super.onCreateOptionsMenu(menu);
@@ -189,8 +212,23 @@ public class FileListActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            mObexClient.shutdown();
-            finish();
+            if (mCurFolder.isEmpty()) {
+                mObexClient.shutdown(); // top folder, back go previous activity
+                finish();
+            } else {
+                String title;
+                int idx = mCurFolder.lastIndexOf(File.separator);
+                if (idx != -1) {
+                    mCurFolder = mCurFolder.substring(0, mCurFolder.lastIndexOf(File.separator));
+                    title = mCurFolder;
+                } else {
+                    // must be backing up to top dir
+                    mCurFolder = "";
+                    title = getResources().getString(R.string.browse_files);
+                }
+                setTitle(title);
+                mObexClient.browseFolder(".."); // go up one folder
+            }
         }
 
         return super.onOptionsItemSelected(item);
