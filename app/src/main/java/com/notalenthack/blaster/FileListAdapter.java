@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class FileListAdapter extends BaseAdapter
             fields = new FieldReferences();
             fields.picture = (ImageView)convertView.findViewById(R.id.picture);
             fields.name = (TextView)convertView.findViewById(R.id.text);
+            fields.progressBar = (ProgressBar)convertView.findViewById(R.id.myProgress);
 
             convertView.setTag(fields);
         } else {
@@ -91,6 +93,7 @@ public class FileListAdapter extends BaseAdapter
     private class FieldReferences {
         ImageView picture;
         TextView name;
+        ProgressBar progressBar;
     }
 
     public void addFileEntries(ArrayList<FileEntry> entries) {

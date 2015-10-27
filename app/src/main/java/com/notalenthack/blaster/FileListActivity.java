@@ -115,6 +115,7 @@ public class FileListActivity extends Activity {
 
             mObexClient.connect(mDevice.getBluetoothDevice());
 
+            // Browse the top most folder first
             mObexClient.browseFolder("");
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");

@@ -59,7 +59,6 @@ import javax.obex.ResponseCodes;
 public class BluetoothObexClient {
     private static final String TAG = "BluetoothMnsObexClient";
     private static final boolean D = false;
-    private static final boolean V = false;
     private ObexTransport mTransport;
     private Context mContext;
     public Handler mHandler = null;
@@ -143,6 +142,7 @@ public class BluetoothObexClient {
                 if (D) Log.d(TAG, "Obex Transport Closed");
             } catch (IOException e) {
                 Log.e(TAG, "mTransport.close error: " + e.getMessage());
+                sendMessageToast("mTransport.close error: " + e.getMessage());
             }
         }
     }
@@ -184,7 +184,7 @@ public class BluetoothObexClient {
             btSocket.connect();
         } catch (IOException e) {
             Log.e(TAG, "BtSocket Connect error " + e.getMessage(), e);
-            // TODO: do we need to report error somewhere?
+            sendMessageToast("BtSocket Connect error: " + e.getMessage());
             return;
         }
         mTransport = new BluetoothRfcommTransport(btSocket);
@@ -193,6 +193,7 @@ public class BluetoothObexClient {
             mConnected = true;
         } catch (IOException e1) {
             Log.e(TAG, "OBEX session create error " + e1.getMessage());
+            sendMessageToast("OBEX session create error: " + e1.getMessage());
         }
         if (mConnected && mClientSession != null) {
             mConnected = false;
@@ -211,6 +212,7 @@ public class BluetoothObexClient {
                 mConnected = true;
             } catch (IOException e) {
                 Log.e(TAG, "OBEX session connect error " + e.getMessage());
+                sendMessageToast("OBEX session connect error: " + e.getMessage());
             }
         }
         synchronized (this) {
@@ -231,6 +233,7 @@ public class BluetoothObexClient {
             HeaderSet result = clientSession.setPath(header, false, false);//if the third option is set to true
             if (result.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
                 Log.e(TAG, "Bad setPath " + result.getResponseCode());
+                sendMessageToast("Bad setPath " + result.getResponseCode());
             }
             //the folder if not exist it is created
             //Retreive the file
@@ -250,6 +253,7 @@ public class BluetoothObexClient {
             return true;
         }catch(Exception e){
             Log.e(TAG, "Exception " + e.toString());
+            sendMessageToast("Exception " + e.toString());
             return false;
         }
     }
@@ -270,6 +274,7 @@ public class BluetoothObexClient {
             HeaderSet result = clientSession.setPath(header, false, false);//if the third option is set to true
             if (result.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
                 Log.e(TAG, "Bad setPath " + result.getResponseCode());
+                sendMessageToast("Bad setPath " + result.getResponseCode());
             }
             HeaderSet header2 = new HeaderSet();
             header2.setHeader(HeaderSet.TYPE, "x-obex/folder-listing");
@@ -290,7 +295,8 @@ public class BluetoothObexClient {
             sendFileList(list);
             return true;
         }catch(Exception e){
-            System.out.println("Exception " + e.toString());
+            Log.e(TAG, "Exception " + e.toString());
+            sendMessageToast("Exception " + e.toString());
             return false;
         }
     }
@@ -311,6 +317,7 @@ public class BluetoothObexClient {
         mHandler.sendMessage(msg);
     }
 
+    // Maybe we should use msg.obj instead of bundle?
     private void sendFileList(ArrayList<FileEntry> entries) {
         Message msg = mCallback.obtainMessage(Constants.MESSAGE_BROWSE_DONE_CMD);
         Bundle bundle = new Bundle();
