@@ -33,7 +33,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,6 +44,7 @@ import java.util.Set;
 public class FileListAdapter extends BaseAdapter
 {
     private List<FileEntry> items = new ArrayList<FileEntry>();
+    private Map<String, FileEntry> mapItems = new HashMap<String, FileEntry>();
     private LayoutInflater inflater;
 
     public FileListAdapter(Activity par)
@@ -86,9 +89,14 @@ public class FileListAdapter extends BaseAdapter
 
         fields.picture.setImageResource(entry.drawableId);;
         fields.name.setText(entry.name);
+        if (!entry.bFolder) {
+            fields.progressBar.setProgress(entry.downloadProgress);
+        }
 
         return convertView;
     }
+
+    public FileEntry getItem(String name) { return mapItems.get(name); }
 
     private class FieldReferences {
         ImageView picture;
@@ -100,6 +108,7 @@ public class FileListAdapter extends BaseAdapter
         items.clear();  // remove old entries
         for (FileEntry entry : entries) {
             items.add(entry);
+            mapItems.put(entry.name, entry);
         }
     }
 }

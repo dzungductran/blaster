@@ -250,6 +250,7 @@ public class BluetoothObexClient {
             File f = new File(path);
             if (f.exists() && f.length() == expectedSize) {
                 sendMessageToast("File " + path + " already existed");
+                sendDownloadStatus(folder, file, 100.0);
                 return true;
             }
             f.createNewFile();
@@ -268,10 +269,19 @@ public class BluetoothObexClient {
             InputStream is = op.openInputStream();
 
             FileOutputStream fos = new FileOutputStream (f);
+            long total = 0;
+            long chunkSize = expectedSize / 10;
+            long chunk = chunkSize;
             byte b[] = new byte[1000];
             int len;
             while (is.available() > 0 && (len = is.read(b)) > 0) {
                 fos.write (b, 0, len);
+                total += len;
+                if (total >= chunk) {
+                    double r = ((double)total/expectedSize) * 100;
+                    sendDownloadStatus(folder, file, r);
+                    chunk += chunkSize;
+                }
             }
             fos.close();
             is.close();
@@ -357,6 +367,17 @@ public class BluetoothObexClient {
         Message msg = mCallback.obtainMessage(Constants.MESSAGE_BROWSE_DONE_CMD);
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList(Constants.KEY_FILE_ENTRIES, entries);
+        msg.setData(bundle);
+        mCallback.sendMessage(msg);
+    }
+
+    private void sendDownloadStatus(String folder, String file, double percent) {
+        // Send a failure message back to the Activity
+        Message msg = mCallback.obtainMessage(Constants.MESSAGE_DOWNLOAD_PROGRESS);
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.KEY_FOLDER_NAME, folder);
+        bundle.putString(Constants.KEY_FILE_NAME, file);
+        bundle.putInt(Constants.KEY_PERCENT, (int)percent);
         msg.setData(bundle);
         mCallback.sendMessage(msg);
     }

@@ -35,14 +35,16 @@ public class FileEntry implements Parcelable {
     public long accessTime;
     public boolean bFolder;
     public int drawableId;
+    public int downloadProgress;
 
-    public FileEntry(String name, String perm, long size, long accessTime, int drawableId, boolean bFolder) {
+    public FileEntry(String name, String perm, long size, long accessTime, int drawableId, boolean bFolder, int downloadProgress) {
         this.name = name;
         this.perm = perm;
         this.size = size;
         this.accessTime = accessTime;
         this.drawableId = drawableId;
         this.bFolder = bFolder; // Is folder or file
+        this.downloadProgress = downloadProgress;
     }
 
     @Override
@@ -57,6 +59,7 @@ public class FileEntry implements Parcelable {
         parcel.writeLong(this.size);
         parcel.writeLong(this.accessTime);
         parcel.writeInt(this.drawableId);
+        parcel.writeInt(this.downloadProgress);
         parcel.writeByte((byte) (this.bFolder ? 1 : 0));
     }
 
@@ -68,8 +71,9 @@ public class FileEntry implements Parcelable {
             long size = parcel.readLong();
             long accessTime = parcel.readLong();
             int drawableId = parcel.readInt();
+            int downProg = parcel.readInt();
             boolean bFolder = parcel.readByte() != 0;
-            return new FileEntry(name, perm, size, accessTime, drawableId, bFolder);
+            return new FileEntry(name, perm, size, accessTime, drawableId, bFolder, downProg);
         }
 
         @Override

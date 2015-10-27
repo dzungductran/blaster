@@ -33,6 +33,7 @@ public class Constants {
     public static final int MESSAGE_DEVICE_NAME_CMD = 4;
     public static final int MESSAGE_TOAST_CMD = 5;
     public static final int MESSAGE_BROWSE_DONE_CMD = 6;
+    public static final int MESSAGE_DOWNLOAD_PROGRESS = 7;
 
     public static final String KEY_TOAST = "toast";
     public static final String KEY_DEVICE_NAME = "device_name";
@@ -42,6 +43,7 @@ public class Constants {
     public static final String KEY_FILE_NAME = "file_name";
     public static final String KEY_FOLDER_NAME = "folder_name";
     public static final String KEY_FILE_SIZE = "file_size";
+    public static final String KEY_PERCENT = "percent";
 
     // serial command
     // commands between Client and Server. Server is on Edison side and

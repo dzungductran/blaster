@@ -161,6 +161,19 @@ public class FileListActivity extends Activity {
                     ArrayList<FileEntry> entries = msg.getData().getParcelableArrayList(Constants.KEY_FILE_ENTRIES);
                     mListAdapter.addFileEntries(entries);
                     mListAdapter.notifyDataSetChanged();
+                    break;
+
+                case Constants.MESSAGE_DOWNLOAD_PROGRESS:
+                    String folder = msg.getData().getString(Constants.KEY_FOLDER_NAME);
+                    if (folder.equals(mCurFolder)) {
+                        String file = msg.getData().getString(Constants.KEY_FILE_NAME);
+                        int percent = msg.getData().getInt(Constants.KEY_PERCENT);
+                        FileEntry entry = mListAdapter.getItem(file);
+                        if (entry != null) {
+                            entry.downloadProgress = percent;
+                            mListAdapter.notifyDataSetChanged();
+                        }
+                    }
             }
         }
     };

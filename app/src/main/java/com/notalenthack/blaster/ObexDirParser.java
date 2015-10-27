@@ -143,6 +143,6 @@ public class ObexDirParser {
             }
         }
 
-        return new FileEntry(name, perm, size, accessTime, resId, bFolder);
+        return new FileEntry(name, perm, size, accessTime, resId, bFolder, 0);
     }
 }
