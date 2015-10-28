@@ -240,7 +240,7 @@ public class BluetoothObexClient {
                 path += File.separator + folder;
                 File dir = new File(path);
                 if (!dir.exists()) {
-                    if (!dir.mkdir()) {
+                    if (!dir.mkdirs()) {
                         sendMessageToast("Can't create directory: " + path);
                         return false;
                     }
@@ -248,10 +248,14 @@ public class BluetoothObexClient {
             }
             path += File.separator + file;
             File f = new File(path);
-            if (f.exists() && f.length() == expectedSize) {
-                sendMessageToast("File " + path + " already existed");
-                sendDownloadStatus(folder, file, 100.0);
-                return true;
+            if (f.exists()) {
+                if (f.length() == expectedSize) {
+                    sendMessageToast("File " + path + " already existed");
+                    sendDownloadStatus(folder, file, 100.0);
+                    return true;
+                } else {
+                   f.delete();  // delete the file
+                }
             }
             f.createNewFile();
 
@@ -272,7 +276,7 @@ public class BluetoothObexClient {
             long total = 0;
             long chunkSize = expectedSize / 10;
             long chunk = chunkSize;
-            byte b[] = new byte[1000];
+            byte b[] = new byte[1024];
             int len;
             while (is.available() > 0 && (len = is.read(b)) > 0) {
                 fos.write (b, 0, len);
