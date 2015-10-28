@@ -23,48 +23,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ShareActionProvider;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.notalenthack.blaster.dialog.EditCommandDialog;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Class that displays all the files
@@ -138,24 +116,19 @@ public class FileListActivity extends Activity {
                     view.setBackgroundColor(getResources().getColor(R.color.holo_blue_light));
                     previousSelectedView = view;
                     if (entry.downloadProgress == 100) {
-                        File root = Environment.getExternalStorageDirectory();
-                        String path = root.getAbsolutePath();
-                        if (!mCurFolder.isEmpty()) {
-                            path += File.separator + mCurFolder;
-                        }
-                        path += File.separator + entry.name;
-                        String type = URLConnection.guessContentTypeFromName(path);
+                        String pathName = entry.path + File.separator + entry.name;
+                        String type = URLConnection.guessContentTypeFromName(pathName);
                         if (type == null) {
                             Toast.makeText(getApplicationContext(),
-                                    "No viewer for file: " + path, Toast.LENGTH_SHORT).show();
+                                    "No viewer for file: " + pathName, Toast.LENGTH_SHORT).show();
                             return;
                         }
                         Intent intent = new Intent();
                         intent.setAction(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.parse("file://" + path), type);
+                        intent.setDataAndType(Uri.parse("file://" + pathName), type);
                         startActivity(intent);
                     } else {
-                        mObexClient.downloadFile(mCurFolder, entry.name, entry.size);
+                        mObexClient.downloadFile(entry.path, entry.name, entry.size);
                     }
                     //setShareIntent("/url_here");
                 }
@@ -198,12 +171,12 @@ public class FileListActivity extends Activity {
                     File root = Environment.getExternalStorageDirectory();
                     for (FileEntry entry : entries) {
                         if (!entry.bFolder) {
-                            String path = root.getAbsolutePath();
+                            entry.path = root.getAbsolutePath();
                             if (!mCurFolder.isEmpty()) {
-                                path += File.separator + mCurFolder;
+                                entry.path += File.separator + mCurFolder;
                             }
-                            path += File.separator + entry.name;
-                            File f = new File(path);
+                            String pathName = entry.path + File.separator + entry.name;
+                            File f = new File(pathName);
                             if (f.exists() && f.length() == entry.size) {
                                 entry.downloadProgress = 100;
                             }
@@ -216,14 +189,12 @@ public class FileListActivity extends Activity {
 
                 case Constants.MESSAGE_DOWNLOAD_PROGRESS:
                     String folder = msg.getData().getString(Constants.KEY_FOLDER_NAME);
-                    if (folder.equals(mCurFolder)) {
-                        String file = msg.getData().getString(Constants.KEY_FILE_NAME);
-                        int percent = msg.getData().getInt(Constants.KEY_PERCENT);
-                        FileEntry entry = mListAdapter.getItem(file);
-                        if (entry != null) {
-                            entry.downloadProgress = percent;
-                            mListAdapter.notifyDataSetChanged();
-                        }
+                    String file = msg.getData().getString(Constants.KEY_FILE_NAME);
+                    int percent = msg.getData().getInt(Constants.KEY_PERCENT);
+                    FileEntry entry = mListAdapter.getItem(folder + File.separator + file);
+                    if (entry != null) {
+                        entry.downloadProgress = percent;
+                        mListAdapter.notifyDataSetChanged();
                     }
             }
         }

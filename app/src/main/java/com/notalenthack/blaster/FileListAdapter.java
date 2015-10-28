@@ -23,7 +23,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,11 +31,11 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Adapter for loading files
@@ -98,7 +97,7 @@ public class FileListAdapter extends BaseAdapter
         return convertView;
     }
 
-    public FileEntry getItem(String name) { return mapItems.get(name); }
+    public FileEntry getItem(String pathName) { return mapItems.get(pathName); }
 
     private class FieldReferences {
         ImageView picture;
@@ -110,7 +109,7 @@ public class FileListAdapter extends BaseAdapter
         items.clear();  // remove old entries
         for (FileEntry entry : entries) {
             items.add(entry);
-            mapItems.put(entry.name, entry);
+            mapItems.put(entry.path + File.separator + entry.name, entry);
         }
     }
 }

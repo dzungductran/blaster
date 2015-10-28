@@ -30,6 +30,7 @@ import android.os.Parcelable;
  */
 public class FileEntry implements Parcelable {
     public String name;
+    public String path;
     public String perm;
     public long size;
     public long accessTime;
@@ -37,8 +38,9 @@ public class FileEntry implements Parcelable {
     public int drawableId;
     public int downloadProgress;
 
-    public FileEntry(String name, String perm, long size, long accessTime, int drawableId, boolean bFolder, int downloadProgress) {
+    public FileEntry(String name, String path, String perm, long size, long accessTime, int drawableId, boolean bFolder, int downloadProgress) {
         this.name = name;
+        this.path = path;
         this.perm = perm;
         this.size = size;
         this.accessTime = accessTime;
@@ -55,6 +57,7 @@ public class FileEntry implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeString(this.name);
+        parcel.writeString(this.path);
         parcel.writeString(this.perm);
         parcel.writeLong(this.size);
         parcel.writeLong(this.accessTime);
@@ -67,13 +70,14 @@ public class FileEntry implements Parcelable {
         @Override
         public FileEntry createFromParcel(Parcel parcel, ClassLoader classLoader) {
             String name = parcel.readString();
+            String path = parcel.readString();
             String perm = parcel.readString();
             long size = parcel.readLong();
             long accessTime = parcel.readLong();
             int drawableId = parcel.readInt();
             int downProg = parcel.readInt();
             boolean bFolder = parcel.readByte() != 0;
-            return new FileEntry(name, perm, size, accessTime, drawableId, bFolder, downProg);
+            return new FileEntry(name, path, perm, size, accessTime, drawableId, bFolder, downProg);
         }
 
         @Override

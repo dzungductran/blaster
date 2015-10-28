@@ -37,7 +37,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -143,6 +142,6 @@ public class ObexDirParser {
             }
         }
 
-        return new FileEntry(name, perm, size, accessTime, resId, bFolder, 0);
+        return new FileEntry(name, "", perm, size, accessTime, resId, bFolder, 0);
     }
 }

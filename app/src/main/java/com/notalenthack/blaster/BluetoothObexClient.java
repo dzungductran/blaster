@@ -234,23 +234,18 @@ public class BluetoothObexClient {
         try {
             //Go the desired folder
             // Create file on disk
-            File root = Environment.getExternalStorageDirectory();
-            String path = root.getAbsolutePath();
-            if (!folder.isEmpty()) {
-                path += File.separator + folder;
-                File dir = new File(path);
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        sendMessageToast("Can't create directory: " + path);
-                        return false;
-                    }
+            File dir = new File(folder);
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    sendMessageToast("Can't create directory: " + folder);
+                    return false;
                 }
             }
-            path += File.separator + file;
-            File f = new File(path);
+            String pathName = folder + File.separator + file;
+            File f = new File(pathName);
             if (f.exists()) {
                 if (f.length() == expectedSize) {
-                    sendMessageToast("File " + path + " already existed");
+                    sendMessageToast("File " + pathName + " already existed");
                     sendDownloadStatus(folder, file, 100.0);
                     return true;
                 } else {
