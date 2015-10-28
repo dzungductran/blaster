@@ -107,6 +107,7 @@ public class FileListAdapter extends BaseAdapter
 
     public void addFileEntries(ArrayList<FileEntry> entries) {
         items.clear();  // remove old entries
+        mapItems.clear();
         for (FileEntry entry : entries) {
             items.add(entry);
             mapItems.put(entry.path + File.separator + entry.name, entry);
