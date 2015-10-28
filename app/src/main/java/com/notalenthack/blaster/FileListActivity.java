@@ -29,7 +29,10 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -56,6 +59,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -82,6 +87,8 @@ public class FileListActivity extends Activity {
 
     private Menu menu;
 
+    private View previousSelectedView = null;
+
     /**
      * Called when the activity is first created.
      */
@@ -104,12 +111,12 @@ public class FileListActivity extends Activity {
         mListAdapter = new FileListAdapter(this);
         mGridView.setAdapter(mListAdapter);
 
-        // What to do when an item is select
+        // What to do when an item is select\
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (D) Log.d(TAG, "position " + position);
-                FileEntry entry = (FileEntry)mListAdapter.getItem(position);
+                FileEntry entry = (FileEntry) mListAdapter.getItem(position);
 
                 // Folder so we need to browse into it
                 if (entry.bFolder) {
@@ -122,11 +129,39 @@ public class FileListActivity extends Activity {
 
                     mObexClient.browseFolder(entry.name);
                 } else {
-                    mObexClient.downloadFile(mCurFolder, entry.name, entry.size);
+                    if (previousSelectedView != null) {
+                        previousSelectedView.setSelected(false);
+                        previousSelectedView.setBackgroundColor(Color.WHITE);
+                    }
+                    view.setSelected(true);
+                    // Set the current selected item background color
+                    view.setBackgroundColor(getResources().getColor(R.color.holo_blue_light));
+                    previousSelectedView = view;
+                    if (entry.downloadProgress == 100) {
+                        File root = Environment.getExternalStorageDirectory();
+                        String path = root.getAbsolutePath();
+                        if (!mCurFolder.isEmpty()) {
+                            path += File.separator + mCurFolder;
+                        }
+                        path += File.separator + entry.name;
+                        String type = URLConnection.guessContentTypeFromName(path);
+                        if (type == null) {
+                            Toast.makeText(getApplicationContext(),
+                                    "No viewer for file: " + path, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.parse("file://" + path), type);
+                        startActivity(intent);
+                    } else {
+                        mObexClient.downloadFile(mCurFolder, entry.name, entry.size);
+                    }
                     //setShareIntent("/url_here");
                 }
             }
         });
+
 
         if (mDevice != null) {
             getActionBar().setHomeButtonEnabled(true);
@@ -153,12 +188,28 @@ public class FileListActivity extends Activity {
                 case Constants.MESSAGE_TOAST_CMD:
                     if (D) Log.i(TAG, "MESSAGE_TOAST_CMD: " + msg.arg1);
                     Toast.makeText(getApplicationContext(),
-                            msg.getData().getString(Constants.KEY_TOAST), Toast.LENGTH_LONG).show();
+                            msg.getData().getString(Constants.KEY_TOAST), Toast.LENGTH_SHORT).show();
                     break;
 
                 case Constants.MESSAGE_BROWSE_DONE_CMD:
                     if (D) Log.i(TAG, "Done browsing get file list");
                     ArrayList<FileEntry> entries = msg.getData().getParcelableArrayList(Constants.KEY_FILE_ENTRIES);
+                    //Go the list of files and see if they exist on disk
+                    File root = Environment.getExternalStorageDirectory();
+                    for (FileEntry entry : entries) {
+                        if (!entry.bFolder) {
+                            String path = root.getAbsolutePath();
+                            if (!mCurFolder.isEmpty()) {
+                                path += File.separator + mCurFolder;
+                            }
+                            path += File.separator + entry.name;
+                            File f = new File(path);
+                            if (f.exists() && f.length() == entry.size) {
+                                entry.downloadProgress = 100;
+                            }
+                        }
+                    }
+                    // Add entry to the list
                     mListAdapter.addFileEntries(entries);
                     mListAdapter.notifyDataSetChanged();
                     break;

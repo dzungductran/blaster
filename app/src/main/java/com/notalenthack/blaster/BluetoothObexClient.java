@@ -320,7 +320,7 @@ public class BluetoothObexClient {
             HeaderSet result = clientSession.setPath(header, upLevel, false);//if the third option is set to true
             if (result.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
                 Log.e(TAG, "Bad setPath " + result.getResponseCode());
-                sendMessageToast("Bad setPath " + result.getResponseCode());
+                //sendMessageToast("Bad setPath " + result.getResponseCode());
             }
             HeaderSet header2 = new HeaderSet();
             header2.setHeader(HeaderSet.TYPE, "x-obex/folder-listing");

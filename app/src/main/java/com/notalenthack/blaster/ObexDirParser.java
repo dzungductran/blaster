@@ -136,7 +136,7 @@ public class ObexDirParser {
                 resId = R.drawable.ic_picture;
             } else if (lowcase.endsWith(".mp4") || lowcase.endsWith(".ogv")
                     || (lowcase.endsWith(".m4v")) || lowcase.endsWith(".h264")
-                    || (lowcase.endsWith(".mpg"))) {
+                    || (lowcase.endsWith(".mpg")) || lowcase.endsWith(".webm")) {
                 resId = R.drawable.ic_movies;
             } else {
                 resId = R.drawable.ic_file;

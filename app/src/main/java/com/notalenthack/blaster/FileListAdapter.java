@@ -91,6 +91,8 @@ public class FileListAdapter extends BaseAdapter
         fields.name.setText(entry.name);
         if (!entry.bFolder) {
             fields.progressBar.setProgress(entry.downloadProgress);
+        } else {
+            fields.progressBar.setProgress(0);
         }
 
         return convertView;
