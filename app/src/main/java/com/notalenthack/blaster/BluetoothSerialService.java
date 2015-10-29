@@ -441,12 +441,12 @@ public class BluetoothSerialService {
      * byte 2 = type (0-stdout, 1-stdin, 2-stderr, 3-stdout&stderr
      * byte 3-N = command string
      */
-    public void sendCommand(int cmd, int otype,  String cmdStr) {
+    public void sendCommand(int cmd, String type,  String cmdStr) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
             jsonObject.put(Constants.KEY_COMMAND, cmdStr);
-            jsonObject.put(Constants.KEY_CAPTURE_OUTPUT, otype);
+            jsonObject.put(Constants.KEY_CAPTURE_OUTPUT, type);
             sendJSON(jsonObject);
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON " + ex.getMessage());

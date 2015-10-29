@@ -58,7 +58,7 @@ public class Constants {
     public static final int SERIAL_CMD_STOP   = 0x5;
     public static final int SERIAL_CMD_CLOSE  = 0xF;
 
-    public static final int SERIAL_TYPE_STDOUT = 0x1;
-    public static final int SERIAL_TYPE_STDERR = 0x2;
-    public static final int SERIAL_TYPE_STDOUT_ERR = 0x3;
+    public static final String SERIAL_TYPE_STDOUT = "o";
+    public static final String SERIAL_TYPE_STDERR = "e";
+    public static final String SERIAL_TYPE_STDOUT_ERR = "r";
 }
