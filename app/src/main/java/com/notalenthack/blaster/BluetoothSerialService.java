@@ -25,6 +25,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -362,12 +365,24 @@ public class BluetoothSerialService {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
                     byte[] in = ByteBuffer.allocate(bytes).put(buffer, 0, bytes).array();
-                    if (in[0] == Constants.SERIAL_CMD_ERROR) {
-                        String msg = new String(in);
-                        sendMessageToast(msg.substring(1)); // by pass 1 byte which is command
-                    }
                     debugInputData(in);
 
+                    String s = new String(in);
+                    try {
+                        JSONObject jsonObject = new JSONObject(s);
+                        int cmd = jsonObject.getInt(Constants.KEY_COMMAND_TYPE);
+                        switch (cmd) {
+                            case Constants.SERIAL_CMD_ERROR:
+                                String msg = jsonObject.getString(Constants.KEY_TOAST);
+                                sendMessageToast(msg);
+                                break;
+                            case Constants.SERIAL_CMD_STATUS:
+                                break;
+                        }
+                    } catch (JSONException ex) {
+                        sendMessageToast(ex.getMessage()); // by pass 1 byte which is command
+                        continue;
+                    }
                     // Send the obtained bytes to the UI Activity
                     //mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
@@ -426,32 +441,54 @@ public class BluetoothSerialService {
      * byte 2 = type (0-stdout, 1-stdin, 2-stderr, 3-stdout&stderr
      * byte 3-N = command string
      */
-    public void sendCommand(byte cmd, byte otype,  String cmdStr) {
-        int len = cmdStr.length();
-        byte[] out = ByteBuffer.allocate(2+len)
-                .put(cmd)                         // 1 byte for command
-                .put(otype)
-                .put(cmdStr.getBytes()).array();  // cmdStr
-        write( out );
+    public void sendCommand(int cmd, int otype,  String cmdStr) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
+            jsonObject.put(Constants.KEY_COMMAND, cmdStr);
+            jsonObject.put(Constants.KEY_CAPTURE_OUTPUT, otype);
+            sendJSON(jsonObject);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
+            return;
+        }
     }
 
     /*
     * byte 1 = command
     * byte 2-N = command string
     */
-    public void sendCommand(byte cmd, String cmdStr) {
-        int len = cmdStr.length();
-        byte[] out = ByteBuffer.allocate(1+len)
-                .put(cmd)                         // 1 byte for command
-                .put(cmdStr.getBytes()).array();  // cmdStr
-        write( out );
+    public void sendCommand(int cmd, String cmdStr) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
+            jsonObject.put(Constants.KEY_COMMAND, cmdStr);
+            sendJSON(jsonObject);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
+            return;
+        }
     }
 
     /*
     * byte 1 = command
     */
-    public void sendCommand(byte cmd) {
-        byte[] out = ByteBuffer.allocate(1).put(cmd).array();
+    public void sendCommand(int cmd) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
+            sendJSON(jsonObject);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
+            return;
+        }
+    }
+
+    // send the JSON over BT
+    private void sendJSON(JSONObject jsonObject) {
+        int len = jsonObject.toString().length();
+        byte[] out = ByteBuffer.allocate(len)
+                .put(jsonObject.toString().getBytes()).array();  // cmdStr
         write( out );
     }
 

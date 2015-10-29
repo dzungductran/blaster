@@ -45,17 +45,20 @@ public class Constants {
     public static final String KEY_FILE_SIZE = "file_size";
     public static final String KEY_PERCENT = "percent";
 
+    public static final String KEY_COMMAND_TYPE = "command_type";
+    public static final String KEY_COMMAND = "command";
+    public static final String KEY_CAPTURE_OUTPUT = "capture_output";
+
     // serial command
     // commands between Client and Server. Server is on Edison side and
-    public static byte SERIAL_CMD_START  = 0x1;
-    public static byte SERIAL_CMD_STATUS = 0x2;
-    public static byte SERIAL_CMD_ERROR  = 0x3;
-    public static byte SERIAL_CMD_KILL   = 0x4;
-    public static byte SERIAL_CMD_STOP   = 0x5;
-    public static byte SERIAL_CMD_CLOSE  = 0xF;
+    public static final int SERIAL_CMD_START  = 0x1;
+    public static final int SERIAL_CMD_STATUS = 0x2;
+    public static final int SERIAL_CMD_ERROR  = 0x3;
+    public static final int SERIAL_CMD_KILL   = 0x4;
+    public static final int SERIAL_CMD_STOP   = 0x5;
+    public static final int SERIAL_CMD_CLOSE  = 0xF;
 
-    public static byte SERIAL_TYPE_STDOUT = 'o';
-    public static byte SERIAL_TYPE_STDIN  = 'w';
-    public static byte SERIAL_TYPE_STDERR = 'e';
-    public static byte SERIAL_TYPE_STDOUT_ERR = 'r';
+    public static final int SERIAL_TYPE_STDOUT = 0x1;
+    public static final int SERIAL_TYPE_STDERR = 0x2;
+    public static final int SERIAL_TYPE_STDOUT_ERR = 0x3;
 }
