@@ -54,4 +54,8 @@ public class Constants {
     public static byte SERIAL_CMD_STOP   = 0x5;
     public static byte SERIAL_CMD_CLOSE  = 0xF;
 
+    public static byte SERIAL_TYPE_STDOUT = 'o';
+    public static byte SERIAL_TYPE_STDIN  = 'w';
+    public static byte SERIAL_TYPE_STDERR = 'e';
+    public static byte SERIAL_TYPE_STDOUT_ERR = 'r';
 }

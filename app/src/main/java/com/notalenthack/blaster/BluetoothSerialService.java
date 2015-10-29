@@ -362,6 +362,10 @@ public class BluetoothSerialService {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
                     byte[] in = ByteBuffer.allocate(bytes).put(buffer, 0, bytes).array();
+                    if (in[0] == Constants.SERIAL_CMD_ERROR) {
+                        String msg = new String(in);
+                        sendMessageToast(msg.substring(1)); // by pass 1 byte which is command
+                    }
                     debugInputData(in);
 
                     // Send the obtained bytes to the UI Activity
@@ -419,17 +423,35 @@ public class BluetoothSerialService {
 
     /*
      * byte 1 = command
-     * byte 2 = NONE
-     * byte 3,4,5,6 = 6
-     * byte 7-12 = command string
+     * byte 2 = type (0-stdout, 1-stdin, 2-stderr, 3-stdout&stderr
+     * byte 3-N = command string
      */
+    public void sendCommand(byte cmd, byte otype,  String cmdStr) {
+        int len = cmdStr.length();
+        byte[] out = ByteBuffer.allocate(2+len)
+                .put(cmd)                         // 1 byte for command
+                .put(otype)
+                .put(cmdStr.getBytes()).array();  // cmdStr
+        write( out );
+    }
+
+    /*
+    * byte 1 = command
+    * byte 2-N = command string
+    */
     public void sendCommand(byte cmd, String cmdStr) {
         int len = cmdStr.length();
-        byte[] out = ByteBuffer.allocate(6+len)
+        byte[] out = ByteBuffer.allocate(1+len)
                 .put(cmd)                         // 1 byte for command
-                .put(Utils.intToByteArray(len))   // 4 bytes for len of cmdStr
                 .put(cmdStr.getBytes()).array();  // cmdStr
+        write( out );
+    }
 
+    /*
+    * byte 1 = command
+    */
+    public void sendCommand(byte cmd) {
+        byte[] out = ByteBuffer.allocate(1).put(cmd).array();
         write( out );
     }
 

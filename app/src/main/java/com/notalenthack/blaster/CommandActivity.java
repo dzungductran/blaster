@@ -195,7 +195,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
                         startActivity(launchingIntent);
                     } else {
-                        mSerialService.sendCommand(Constants.SERIAL_CMD_START, command.getCommandStart());
+                        mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                                Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
                     }
                 }
             }
@@ -284,7 +285,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            mSerialService.sendCommand(Constants.SERIAL_CMD_CLOSE, "");
+            mSerialService.sendCommand(Constants.SERIAL_CMD_CLOSE);
             mSerialService.stop();
             finish();
         } else if (item.getItemId() == R.id.menu_add_command) {
@@ -378,11 +379,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         try {
             cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP, OBEX_FTP, false, false, true);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/usr/bin/launch", "", false, false, false);
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", false, false, false);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/usr/bin/video start", "/usr/bin/video stop", false, false, false);
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", false, false, false);
             defCmds.add(cmd.toJSON().toString());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/usr/bin/gps start", "/usr/bin/gps stop", false, false, false);
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", false, false, false);
             defCmds.add(cmd.toJSON().toString());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
