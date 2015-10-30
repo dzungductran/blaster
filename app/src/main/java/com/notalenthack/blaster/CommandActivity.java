@@ -71,8 +71,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     // fields in the layout
     private TextView mModelName;
-    private TextView mVendorId;
-    private TextView mCpuSpeed;
+    private TextView mCores;
     private TextView mCacheSize;
     private TextView mConnectStatus;
     private ImageView mDeviceStatus;
@@ -105,8 +104,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         setContentView(R.layout.commands);
         // get the fields
         mModelName = (TextView) findViewById(R.id.modelName);
-        mVendorId = (TextView) findViewById(R.id.vendorId);
-        mCpuSpeed = (TextView) findViewById(R.id.cpuSpeed);
+        mCores = (TextView) findViewById(R.id.cores);
         mCacheSize = (TextView) findViewById(R.id.cacheSize);
         mConnectStatus = (TextView) findViewById(R.id.status);
         mDeviceStatus = (ImageView) findViewById(R.id.deviceStatusIcon);
@@ -220,6 +218,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                         case BluetoothSerialService.STATE_CONNECTED:
                             mDeviceStatus.setImageResource(R.drawable.ic_bluetooth_connected);
                             mConnectStatus.setText(R.string.connected);
+                            // connected, so ask for CPU Info
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_CPU_INFO);
                             break;
 
                         case BluetoothSerialService.STATE_NONE:
@@ -239,8 +239,43 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
                 case Constants.MESSAGE_READ_CMD:
                     if (D) {
-                        byte[] readBuf = (byte[]) msg.obj;
-                        Log.d(TAG, "read data: " + readBuf);
+                        Log.d(TAG, "read data: " + msg.obj);
+                    }
+                    break;
+
+                // command coming back from device
+                case Constants.MESSAGE_DEVICE_SERIAL_CMD:
+                    String jsonStr = msg.getData().getString(Constants.KEY_JSON_STR);
+                    try {
+                        JSONObject jsonObject = new JSONObject(jsonStr);
+                        int cmd = jsonObject.getInt(Constants.KEY_COMMAND_TYPE);
+                        switch (cmd) {
+                            case Constants.SERIAL_CMD_ERROR:
+                                String errStr = jsonObject.getString(Constants.KEY_TOAST);
+                                Toast.makeText(getApplicationContext(), errStr, Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case Constants.SERIAL_CMD_CLOSE:
+                                finish(); // assuming that onDestroy is called to clean up
+                                break;
+
+                            case Constants.SERIAL_CMD_STATUS:
+                                break;
+
+                            case Constants.SERIAL_CMD_CPU_INFO:
+                                String modelName = jsonObject.getString(Constants.KEY_MODEL_NAME);
+                                int cores = jsonObject.getInt(Constants.KEY_CPU_CORES);
+                                String cacheSize = jsonObject.getString(Constants.KEY_CACHE_SIZE);
+                                mModelName.setText(modelName);
+                                mCores.setText(cores + " cores");
+                                mCacheSize.setText(cacheSize + " cache");
+                                break;
+
+                        }
+                    } catch (JSONException ex) {
+                        Log.e(TAG, "Invalid JSON " + ex.getMessage());
+                        Toast.makeText(getApplicationContext(),
+                                "Invalid JSON commadn from device " + ex.getMessage(), Toast.LENGTH_LONG).show();
                     }
                     break;
 

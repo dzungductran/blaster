@@ -43,7 +43,7 @@ import java.util.UUID;
 public class BluetoothSerialService {
     // Debugging
     private static final String TAG = "BluetoothReadService";
-    private static final boolean D = true;
+    private static final boolean D = false;
 
 
     private static final UUID SerialPortServiceClass_UUID =
@@ -249,7 +249,16 @@ public class BluetoothSerialService {
         // Send a failure message back to the Activity
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST_CMD);
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.KEY_TOAST, msgStr );
+        bundle.putString(Constants.KEY_TOAST, msgStr);
+        msg.setData(bundle);
+        mHandler.sendMessage(msg);
+    }
+
+    private void sendMessageBackToUI(String str) {
+        // Send a failure message back to the Activity
+        Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_SERIAL_CMD);
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.KEY_JSON_STR, str);
         msg.setData(bundle);
         mHandler.sendMessage(msg);
     }
@@ -366,25 +375,11 @@ public class BluetoothSerialService {
                     bytes = mmInStream.read(buffer);
                     byte[] in = ByteBuffer.allocate(bytes).put(buffer, 0, bytes).array();
                     debugInputData(in);
-
                     String s = new String(in);
-                    try {
-                        JSONObject jsonObject = new JSONObject(s);
-                        int cmd = jsonObject.getInt(Constants.KEY_COMMAND_TYPE);
-                        switch (cmd) {
-                            case Constants.SERIAL_CMD_ERROR:
-                                String msg = jsonObject.getString(Constants.KEY_TOAST);
-                                sendMessageToast(msg);
-                                break;
-                            case Constants.SERIAL_CMD_STATUS:
-                                break;
-                        }
-                    } catch (JSONException ex) {
-                        sendMessageToast(ex.getMessage()); // by pass 1 byte which is command
-                        continue;
-                    }
-                    // Send the obtained bytes to the UI Activity
-                    //mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    // Share the sent message back to the UI Activity
+                    mHandler.obtainMessage(Constants.MESSAGE_READ_CMD, s.length(), -1, s)
+                            .sendToTarget();
+                    sendMessageBackToUI(s);
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
