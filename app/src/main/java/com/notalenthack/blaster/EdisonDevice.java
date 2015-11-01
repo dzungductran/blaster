@@ -25,10 +25,6 @@ package com.notalenthack.blaster;
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.LayoutInflater;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Class wraps an Edison device
