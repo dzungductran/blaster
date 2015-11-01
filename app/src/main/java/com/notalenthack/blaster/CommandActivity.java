@@ -193,8 +193,21 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
                         startActivity(launchingIntent);
                     } else {
-                        mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                                Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                        Command.Status status = command.getStatus();
+                        if (status == Command.Status.NOT_RUNNING) {
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                                    Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                            command.setStatus(Command.Status.RUNNING);
+                        } else if (status == Command.Status.ZOMBIE) {
+
+                        } else if (status == Command.Status.RUNNING) {
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                                    Constants.SERIAL_TYPE_STDERR, command.getCommandStop());
+                            command.setStatus(Command.Status.NOT_RUNNING);
+                        } else {
+                            Toast.makeText(getApplicationContext(),
+                                    "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             }
@@ -260,6 +273,10 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                                 break;
 
                             case Constants.SERIAL_CMD_STATUS:
+                                int percent = jsonObject.getInt(Constants.KEY_PERCENT);
+                                int id = jsonObject.getInt(Constants.KEY_IDENTIFIER);
+                                mListAdapter.updateCpuUsage(id, percent);
+                                mListAdapter.notifyDataSetChanged();
                                 break;
 
                             case Constants.SERIAL_CMD_CPU_INFO:

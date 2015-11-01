@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -39,7 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CommandListAdapter extends BaseAdapter {
+public class CommandListAdapter extends BaseAdapter implements View.OnClickListener  {
 
     private static final String TAG = CommandListAdapter.class.getCanonicalName();
 
@@ -114,7 +115,18 @@ public class CommandListAdapter extends BaseAdapter {
 		return position;
 	}
 
-	@Override
+    @Override
+    public void onClick(View v) {
+        ImageButton btn = (ImageButton)v;
+        Integer position = (Integer)btn.getTag();
+        if (btn.getId() == R.id.edit) {
+            Log.d(TAG, "Edit button click for position " + position);
+        } else if (btn.getId() == R.id.delete) {
+            Log.d(TAG, "Delete button click for position " + position);
+        }
+    }
+
+    @Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// get already available view or create new if necessary
 		FieldReferences fields;
@@ -125,6 +137,8 @@ public class CommandListAdapter extends BaseAdapter {
             fields.commandStart = (TextView)convertView.findViewById(R.id.commandLine);
         	fields.commandName = (TextView)convertView.findViewById(R.id.commandName);
             fields.cpuUsage = (TextView)convertView.findViewById(R.id.cpuUsage);
+            fields.editButton = (ImageButton)convertView.findViewById(R.id.edit);
+            fields.deleteButton = (ImageButton)convertView.findViewById(R.id.delete);
 
             convertView.setTag(fields);
         } else {
@@ -150,6 +164,10 @@ public class CommandListAdapter extends BaseAdapter {
         } else {
             fields.cpuUsage.setText("");
         }
+        fields.editButton.setOnClickListener(this);
+        fields.editButton.setTag(new Integer(position));
+        fields.deleteButton.setOnClickListener(this);
+        fields.deleteButton.setTag(new Integer(position));
 
 		return convertView;
 	}
@@ -159,5 +177,7 @@ public class CommandListAdapter extends BaseAdapter {
         TextView commandName;
 		TextView commandStart;
         TextView cpuUsage;
+        ImageButton editButton;
+        ImageButton deleteButton;
 	}
 }
