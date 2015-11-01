@@ -4,8 +4,7 @@
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
     >
-    <ImageButton
-        android:background="@drawable/transparent_button"
+    <ImageView
         android:layout_marginLeft="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

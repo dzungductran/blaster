@@ -318,13 +318,12 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
     @Override
     public void onClick(View v) {
-        ImageButton btn = (ImageButton)v;
-        Integer position = (Integer)btn.getTag();
-        final Command cmd = mListAdapter.getCommand(position);
-        if (btn.getId() == R.id.btnEditCommand) {
+        Integer position = (Integer)  v.getTag();
+        if (v.getId() == R.id.btnEditCommand) {
+            final Command cmd = mListAdapter.getCommand(position);
             Log.d(TAG, "Edit button click for position " + position);
             //Creating the instance of PopupMenu
-            PopupMenu popup = new PopupMenu(this, btn);
+            PopupMenu popup = new PopupMenu(this, v);
             //Inflating the Popup using xml file
             popup.getMenuInflater().inflate(R.menu.edit_delete, popup.getMenu());
             popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -346,7 +345,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             // show the popup
             popup.show();
 
-        } else if (btn.getId() == R.id.btnCommandAction) {
+        } else if (v.getId() == R.id.btnCommandAction) {
             Log.d(TAG, "Play button click for position " + position);
             handlePlayCommand(position);
         }

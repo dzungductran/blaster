@@ -36,7 +36,6 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 public class CommandListAdapter extends BaseAdapter  {
@@ -132,7 +131,7 @@ public class CommandListAdapter extends BaseAdapter  {
         	fields.commandName = (TextView)convertView.findViewById(R.id.commandName);
             fields.cpuUsage = (TextView)convertView.findViewById(R.id.cpuUsage);
             fields.playButton = (ImageButton)convertView.findViewById(R.id.btnCommandAction);
-            fields.imageButton = (ImageButton)convertView.findViewById(R.id.btnEditCommand);
+            fields.imageView = (ImageView)convertView.findViewById(R.id.btnEditCommand);
 
             convertView.setTag(fields);
         } else {
@@ -147,7 +146,7 @@ public class CommandListAdapter extends BaseAdapter  {
 
         if(name == null || name.length() <= 0) name = "Unknown";
 
-        fields.imageButton.setImageResource(command.getResourceId());
+        fields.imageView.setImageResource(command.getResourceId());
         fields.commandName.setText(name);
         fields.commandStart.setText(cmdStart);
         if (command.getDisplayStatus()) {
@@ -158,8 +157,13 @@ public class CommandListAdapter extends BaseAdapter  {
         } else {
             fields.cpuUsage.setText("");
         }
-        fields.imageButton.setOnClickListener(mActivity);
-        fields.imageButton.setTag(new Integer(position));
+
+        // only allow edit & delete on non-system command item
+        if (!command.isSystemCommand()) {
+            fields.imageView.setBackground(mActivity.getResources().getDrawable(R.drawable.transparent_button));
+            fields.imageView.setOnClickListener(mActivity);
+        }
+        fields.imageView.setTag(new Integer(position));
         fields.playButton.setOnClickListener(mActivity);
         fields.playButton.setTag(new Integer(position));
 
@@ -171,6 +175,6 @@ public class CommandListAdapter extends BaseAdapter  {
 		TextView commandStart;
         TextView cpuUsage;
         ImageButton playButton;
-        ImageButton imageButton;
+        ImageView imageView;
 	}
 }
