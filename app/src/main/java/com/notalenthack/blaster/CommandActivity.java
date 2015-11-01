@@ -372,21 +372,27 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 startActivity(launchingIntent);
             } else {
                 Command.Status status = command.getStatus();
+                String outType = Constants.SERIAL_TYPE_STDERR;
+                if (command.getDisplayOutput()) {
+                    outType = Constants.SERIAL_TYPE_STDOUT_ERR; // capture stdout+stderr
+                }
                 if (status == Command.Status.NOT_RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                            outType, command.getCommandStart());
                     command.setStatus(Command.Status.RUNNING);
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
-                            Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                            outType, command.getCommandStart());
                 } else if (status == Command.Status.RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            Constants.SERIAL_TYPE_STDERR, command.getCommandStop());
+                            outType, command.getCommandStop());
                     command.setStatus(Command.Status.NOT_RUNNING);
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                mListAdapter.notifyDataSetChanged();
             }
         }
     }
