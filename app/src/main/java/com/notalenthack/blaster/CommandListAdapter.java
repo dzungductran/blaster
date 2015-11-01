@@ -22,8 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 package com.notalenthack.blaster;
 
-import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,16 +38,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CommandListAdapter extends BaseAdapter implements View.OnClickListener  {
+public class CommandListAdapter extends BaseAdapter  {
 
     private static final String TAG = CommandListAdapter.class.getCanonicalName();
 
 	private ArrayList<Command> mCommands;
     private HashMap<String, Command> mMap;
 	private LayoutInflater mInflater;
-    private Activity mActivity;
+    private CommandActivity mActivity;
 
-	public CommandListAdapter(Activity par) {
+    public CommandListAdapter(CommandActivity par) {
 		super();
         mActivity = par;
 		mCommands  = new ArrayList<Command>();
@@ -58,7 +56,7 @@ public class CommandListAdapter extends BaseAdapter implements View.OnClickListe
 	}
 	
 	public void addCommand(Command command) {
-        mMap.put(command.getCommandStart(), command);   // allow for duplicate, we don't check
+        mMap.put(command.getCommandStart()+"_"+command.getCommandStop()+"_"+command.getResourceId(), command);   // allow for duplicate, we don't check
         mCommands.add(command);
 	}
 
@@ -67,6 +65,12 @@ public class CommandListAdapter extends BaseAdapter implements View.OnClickListe
             addCommand(command);
         }
     }
+
+    public void deleteCommand(Command command) {
+        mMap.remove(command.getCommandStart()+"_"+command.getCommandStop()+"_"+command.getResourceId());
+        mCommands.remove(command);
+    }
+
 
     public Set<String> getCommands() {
         Set<String> commands = new HashSet<String>();
@@ -116,17 +120,6 @@ public class CommandListAdapter extends BaseAdapter implements View.OnClickListe
 	}
 
     @Override
-    public void onClick(View v) {
-        ImageButton btn = (ImageButton)v;
-        Integer position = (Integer)btn.getTag();
-        if (btn.getId() == R.id.edit) {
-            Log.d(TAG, "Edit button click for position " + position);
-        } else if (btn.getId() == R.id.delete) {
-            Log.d(TAG, "Delete button click for position " + position);
-        }
-    }
-
-    @Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// get already available view or create new if necessary
 		FieldReferences fields;
@@ -164,9 +157,9 @@ public class CommandListAdapter extends BaseAdapter implements View.OnClickListe
         } else {
             fields.cpuUsage.setText("");
         }
-        fields.editButton.setOnClickListener(this);
+        fields.editButton.setOnClickListener(mActivity);
         fields.editButton.setTag(new Integer(position));
-        fields.deleteButton.setOnClickListener(this);
+        fields.deleteButton.setOnClickListener(mActivity);
         fields.deleteButton.setTag(new Integer(position));
 
 		return convertView;

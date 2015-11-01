@@ -43,6 +43,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -59,7 +60,7 @@ import java.util.Set;
 /**
  * Class that displays all the commands
  */
-public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback {
+public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback, View.OnClickListener  {
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
 
@@ -78,6 +79,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private ImageView mBatteryStatus;
     private ListView mCmdListView;
     private Activity mThisActivity;
+
+    private View mPrevSlideOut = null;
 
     private CommandListAdapter mListAdapter;
 
@@ -156,15 +159,22 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             if (slideIn != null) {
                 if (slideIn.getVisibility() == View.INVISIBLE) {
                     if (dir == Direction.LEFT) {
-                        Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
-                        slideIn.startAnimation(anim);
+                        Animation animI = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
+                        if (mPrevSlideOut != null) {
+                            Animation animO = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
+                            mPrevSlideOut.startAnimation(animO);
+                            mPrevSlideOut.setVisibility(View.INVISIBLE);
+                        }
+                        slideIn.startAnimation(animI);
                         slideIn.setVisibility(View.VISIBLE);
+                        mPrevSlideOut = slideIn;
                     }
                 } else {
                     if (dir == Direction.RIGHT) {
                         Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
                         slideIn.startAnimation(anim);
                         slideIn.setVisibility(View.INVISIBLE);
+                        mPrevSlideOut = null;
                     }
                 }
             }
@@ -391,6 +401,27 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         // Create and show the dialog.
         DialogFragment newFragment = EditCommandDialog.newInstance(command, this);
         newFragment.show(ft, EditCommandDialog.TAG_ICON_PICKER_DIALOG);
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        ImageButton btn = (ImageButton)v;
+        Integer position = (Integer)btn.getTag();
+        Command cmd = mListAdapter.getCommand(position);
+        if (btn.getId() == R.id.edit) {
+            Log.d(TAG, "Edit button click for position " + position);
+            //editCommand(cmd);
+        } else if (btn.getId() == R.id.delete) {
+            Log.d(TAG, "Delete button click for position " + position);
+            if (mPrevSlideOut != null) {
+                mPrevSlideOut.setVisibility(View.INVISIBLE);
+                mPrevSlideOut = null;
+            }
+            mListAdapter.deleteCommand(cmd);
+            saveCommands(); // update commands in pref for presistent
+            mListAdapter.notifyDataSetChanged();
+        }
     }
 
     // Callback when a command is created
