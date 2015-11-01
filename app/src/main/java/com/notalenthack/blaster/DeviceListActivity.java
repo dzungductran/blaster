@@ -60,6 +60,7 @@ public class DeviceListActivity extends ListActivity {
     private DeviceListAdapter mDevicesListAdapter;
     private int mCurrentPosition;
     private boolean mScanning = false;
+    private boolean mRescan = false;
     private boolean mEdisonOnly = true;
 
     private ProgressIndicator mIndicator = null;
@@ -88,7 +89,7 @@ public class DeviceListActivity extends ListActivity {
     // The on-click listener for all devices in the ListViews
     protected void onListItemClick(ListView l, View v, int position, long id) {
         // Cancel discovery because it's costly and we're about to connect
-        stopScanning();
+        stopScanning(false);
 
         mCurrentPosition = position;
 
@@ -110,24 +111,30 @@ public class DeviceListActivity extends ListActivity {
         }
     }
 
-    private synchronized void stopScanning() {
+    private synchronized void stopScanning(boolean rescan) {
         mScanning = false;
-        if (mScanMenuItem != null)
-            mScanMenuItem.setTitle(R.string.start_scan);
-
-        if (mScanProgressItem != null)
-            mScanProgressItem.setActionView(null);
+        mRescan = rescan;
 
         // If we're already discovering, stop it
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
         }
+
+        if (mScanMenuItem != null)
+            mScanMenuItem.setTitle(R.string.start_scan);
     }
     /**
      * Start device discover with the BluetoothAdapter
      */
     private synchronized void startScanning() {
         mScanning = true;
+        mRescan = false;
+
+        // If we're already discovering, stop it
+        if (mBluetoothAdapter.isDiscovering()) {
+            mBluetoothAdapter.cancelDiscovery();
+        }
+
         mDevicesListAdapter.clearList();
         for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
             if (mEdisonOnly) {
@@ -139,16 +146,13 @@ public class DeviceListActivity extends ListActivity {
             }
         }
         mCurrentPosition = -1;
-        if (mScanProgressItem != null) {
-            mScanProgressItem.setActionView(R.layout.actionbar_indeterminate_progress);
-        }
+
         if (mScanMenuItem != null) {
             mScanMenuItem.setTitle(R.string.stop_scan);
         }
 
-        // If we're already discovering, stop it
-        if (mBluetoothAdapter.isDiscovering()) {
-            mBluetoothAdapter.cancelDiscovery();
+        if (mScanProgressItem != null) {
+            mScanProgressItem.setActionView(R.layout.actionbar_indeterminate_progress);
         }
 
         // Request discover from BluetoothAdapter
@@ -199,12 +203,15 @@ public class DeviceListActivity extends ListActivity {
                 mDevicesListAdapter.notifyDataSetChanged();
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                mScanning = false;
                 if (mScanMenuItem != null)
                     mScanMenuItem.setTitle(R.string.start_scan);
 
                 if (mScanProgressItem != null)
                     mScanProgressItem.setActionView(null);
+
+                if (mRescan) {
+                    startScanning();
+                }
             }
             // When the device bond state changed.
             else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
@@ -283,23 +290,26 @@ public class DeviceListActivity extends ListActivity {
         int id = item.getItemId();
         if (id == R.id.action_scan || id == R.id.scanning_indicator) {
             if (mScanning) {
-                stopScanning();
+                stopScanning(false);
             } else {
                 startScanning();
             }
-
-            invalidateOptionsMenu();
+            //invalidateOptionsMenu();
+            return true;
         } else if (id == R.id.action_edison_only) {
             mEdisonOnly = !mEdisonMenuItem.isChecked();   // toggle
             mEdisonMenuItem.setChecked(mEdisonOnly);
             PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean(KEY_EDISON_ONLY, mEdisonOnly);
-            if (mScanning)
-                stopScanning();
-            startScanning();
-            invalidateOptionsMenu();
+            if (mScanning) {
+                stopScanning(true);
+            } else {
+                startScanning();
+            }
+            //invalidateOptionsMenu();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
