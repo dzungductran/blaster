@@ -4,26 +4,27 @@
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
     >
-    <ImageView
+    <ImageButton
+        android:background="@drawable/transparent_button"
         android:layout_marginLeft="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:id="@+id/imageViewItem"
+        android:id="@+id/btnEditCommand"
         android:src="@drawable/unknown_item"/>
     <TextView
         android:id="@+id/commandName"
         android:text="command name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/imageViewItem"
+        android:layout_toRightOf="@+id/btnEditCommand"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="4dp"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
     <TextView
         android:id="@+id/commandLine"
         android:text="command line"
-        android:layout_toRightOf="@+id/imageViewItem"
+        android:layout_toRightOf="@+id/btnEditCommand"
         android:layout_below="@+id/commandName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,7 +33,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"/>
     <ImageButton
         android:background="@drawable/transparent_button"
-        android:id="@+id/commandAction"
+        android:id="@+id/btnCommandAction"
         android:src="@drawable/ic_action_play"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
@@ -42,37 +43,10 @@
     <TextView
         android:id="@+id/cpuUsage"
         android:text="Cpu 0%"
-        android:layout_toLeftOf="@+id/commandAction"
+        android:layout_toLeftOf="@+id/btnCommandAction"
         android:layout_alignBottom="@+id/commandName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
-    <LinearLayout
-        android:id="@+id/slideIn"
-        android:visibility="invisible"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:orientation="horizontal">
-        <ImageButton
-            android:background="@drawable/slide_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/delete"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:id="@+id/edit"
-            android:src="@drawable/ic_sample_26" />
-        <ImageButton
-            android:id="@+id/delete"
-            android:background="@drawable/slide_in_button"
-            android:src="@drawable/ic_sample_21"
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
 </RelativeLayout>

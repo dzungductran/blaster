@@ -26,7 +26,6 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -34,18 +33,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,8 +59,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private static final boolean D = true;
 
     private static final String OBEX_FTP = "Serial OBEX FTP";
-
-    public enum Direction { RIGHT, LEFT };
 
     private EdisonDevice mDevice;
 
@@ -118,27 +112,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
             mSerialService = new BluetoothSerialService(this, mHandlerBT);
 
-            // setup swipe listener
-            mCmdListView.setOnTouchListener(new OnSwipeTouchListener(this, mCmdListView) {
-                @Override
-                public void onSwipeRight(int pos) {
-                    Command command = mListAdapter.getCommand(pos);
-                    if (!command.isSystemCommand()) {
-                        showDeleteButton(pos, Direction.RIGHT);
-                    }
-                    if (D) Toast.makeText(mThisActivity, "right", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onSwipeLeft(int pos) {
-                    Command command = mListAdapter.getCommand(pos);
-                    if (!command.isSystemCommand()) {
-                        showDeleteButton(pos, Direction.LEFT);
-                    }
-                    if (D) Toast.makeText(mThisActivity, "left", Toast.LENGTH_SHORT).show();
-                }
-            });
-
             setupCommandList();
 
             mSerialService.connect(mDevice.getBluetoothDevice());
@@ -147,38 +120,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
         }
-    }
-
-    private boolean showDeleteButton(int pos, Direction dir) {
-        View child = mCmdListView.getChildAt(pos - mCmdListView.getFirstVisiblePosition());
-        if (child != null) {
-
-            View slideIn = child.findViewById(R.id.slideIn);
-            if (slideIn != null) {
-                if (slideIn.getVisibility() == View.INVISIBLE) {
-                    if (dir == Direction.LEFT) {
-                        Animation animI = AnimationUtils.loadAnimation(this, R.anim.slide_in_right);
-                        if (mPrevSlideOut != null) {
-                            Animation animO = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
-                            mPrevSlideOut.startAnimation(animO);
-                            mPrevSlideOut.setVisibility(View.INVISIBLE);
-                        }
-                        slideIn.startAnimation(animI);
-                        slideIn.setVisibility(View.VISIBLE);
-                        mPrevSlideOut = slideIn;
-                    }
-                } else {
-                    if (dir == Direction.RIGHT) {
-                        Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_out_right);
-                        slideIn.startAnimation(anim);
-                        slideIn.setVisibility(View.INVISIBLE);
-                        mPrevSlideOut = null;
-                    }
-                }
-            }
-            return true;
-        }
-        return false;
     }
 
     private void setupCommandList() {
@@ -190,34 +131,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         mCmdListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Command command = mListAdapter.getCommand(position);
-                if (command != null) {
-                    if (D) Log.d(TAG, "command " + command.getCommandStart());
-                    if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP)) {
-                        Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
-                        launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, mDevice);
-
-                        if (D) Log.d(TAG, "Launch file list screen: " + mDevice.getName());
-
-                        startActivity(launchingIntent);
-                    } else {
-                        Command.Status status = command.getStatus();
-                        if (status == Command.Status.NOT_RUNNING) {
-                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                                    Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
-                            command.setStatus(Command.Status.RUNNING);
-                        } else if (status == Command.Status.ZOMBIE) {
-
-                        } else if (status == Command.Status.RUNNING) {
-                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                                    Constants.SERIAL_TYPE_STDERR, command.getCommandStop());
-                            command.setStatus(Command.Status.NOT_RUNNING);
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
+                handlePlayCommand(position);
             }
         });
     }
@@ -406,24 +320,36 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     public void onClick(View v) {
         ImageButton btn = (ImageButton)v;
         Integer position = (Integer)btn.getTag();
-        Command cmd = mListAdapter.getCommand(position);
-        if (btn.getId() == R.id.edit) {
+        final Command cmd = mListAdapter.getCommand(position);
+        if (btn.getId() == R.id.btnEditCommand) {
             Log.d(TAG, "Edit button click for position " + position);
-            if (mPrevSlideOut != null) {
-                mPrevSlideOut.setVisibility(View.INVISIBLE);
-                mPrevSlideOut = null;
-            }
-            editCommand(cmd);
-        } else if (btn.getId() == R.id.delete) {
-            Log.d(TAG, "Delete button click for position " + position);
-            if (mPrevSlideOut != null) {
-                mPrevSlideOut.setVisibility(View.INVISIBLE);
-                mPrevSlideOut = null;
-            }
-            mListAdapter.deleteCommand(cmd);
+            //Creating the instance of PopupMenu
+            PopupMenu popup = new PopupMenu(this, btn);
+            //Inflating the Popup using xml file
+            popup.getMenuInflater().inflate(R.menu.edit_delete, popup.getMenu());
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if (item.getItemId() == R.id.edit) {
+                        editCommand(cmd);
+                    } else if (item.getItemId() == R.id.delete) {
+                        mListAdapter.deleteCommand(cmd);
+                    } else {
+                        return false;
+                    }
+                    saveCommands(); // update commands in pref for presistent
+                    mListAdapter.notifyDataSetChanged();
+                    return true;
+                }
+            });
+
+            // show the popup
+            popup.show();
+
+        } else if (btn.getId() == R.id.btnCommandAction) {
+            Log.d(TAG, "Play button click for position " + position);
+            handlePlayCommand(position);
         }
-        saveCommands(); // update commands in pref for presistent
-        mListAdapter.notifyDataSetChanged();
     }
 
     // Callback when a command is created
@@ -432,6 +358,38 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         mListAdapter.addCommand(command);
         mListAdapter.notifyDataSetChanged();
         saveCommands();
+    }
+
+    private void handlePlayCommand(int position) {
+        Command command = mListAdapter.getCommand(position);
+        if (command != null) {
+            if (D) Log.d(TAG, "command " + command.getCommandStart());
+            if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP)) {
+                Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
+                launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, mDevice);
+
+                if (D) Log.d(TAG, "Launch file list screen: " + mDevice.getName());
+
+                startActivity(launchingIntent);
+            } else {
+                Command.Status status = command.getStatus();
+                if (status == Command.Status.NOT_RUNNING) {
+                    mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                            Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                    command.setStatus(Command.Status.RUNNING);
+                } else if (status == Command.Status.ZOMBIE) {
+                    mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
+                            Constants.SERIAL_TYPE_STDERR, command.getCommandStart());
+                } else if (status == Command.Status.RUNNING) {
+                    mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                            Constants.SERIAL_TYPE_STDERR, command.getCommandStop());
+                    command.setStatus(Command.Status.NOT_RUNNING);
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
     private void saveCommands() {
@@ -473,30 +431,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", false, false, false);
             jsonArray.put(cmd.toJSON());
-
-
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc3", "", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls3", "/usr/bin/video stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls3", "/usr/bin/gps stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
-
-
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc1", "", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls1", "/usr/bin/video stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls1", "/usr/bin/gps stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
-
-
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc2", "", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls2", "/usr/bin/video stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls2", "/usr/bin/gps stop", false, false, false);
-            jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
             return null;
@@ -504,72 +438,4 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         return jsonArray;
     }
-
-    // Touch listener to detect swipe
-    private class OnSwipeTouchListener implements View.OnTouchListener {
-
-        ListView list;
-        private GestureDetector gestureDetector;
-        private Context context;
-
-        public OnSwipeTouchListener(Context ctx, ListView list) {
-            gestureDetector = new GestureDetector(ctx, new GestureListener());
-            context = ctx;
-            this.list = list;
-        }
-
-        public OnSwipeTouchListener() {
-            super();
-        }
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            return gestureDetector.onTouchEvent(event);
-        }
-
-        public void onSwipeRight(int pos) {
-
-        }
-
-        public void onSwipeLeft(int pos) {
-
-        }
-
-        private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
-            private static final int SWIPE_THRESHOLD = 100;
-            private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-            @Override
-            public boolean onDown(MotionEvent e) {
-                return true;
-            }
-
-            private int getPostion(MotionEvent e1) {
-                return list.pointToPosition((int) e1.getX(), (int) e1.getY());
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 == null || e2 == null)
-                    return false;
-                float distanceX = e2.getX() - e1.getX();
-                float distanceY = e2.getY() - e1.getY();
-                if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > SWIPE_THRESHOLD
-                        && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                    int pos = getPostion(e1);
-                    if (pos < 0)
-                        return false;
-                    if (distanceX > 0)
-                        onSwipeRight(getPostion(e1));
-                    else
-                        onSwipeLeft(getPostion(e1));
-                    return true;
-                }
-                return false;
-            }
-
-        }
-    }
-
 }

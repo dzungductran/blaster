@@ -128,12 +128,11 @@ public class CommandListAdapter extends BaseAdapter  {
         if (convertView == null) {
         	convertView = mInflater.inflate(R.layout.command_item, null);
         	fields = new FieldReferences();
-            fields.imageView = (ImageView)convertView.findViewById(R.id.imageViewItem);
             fields.commandStart = (TextView)convertView.findViewById(R.id.commandLine);
         	fields.commandName = (TextView)convertView.findViewById(R.id.commandName);
             fields.cpuUsage = (TextView)convertView.findViewById(R.id.cpuUsage);
-            fields.editButton = (ImageButton)convertView.findViewById(R.id.edit);
-            fields.deleteButton = (ImageButton)convertView.findViewById(R.id.delete);
+            fields.playButton = (ImageButton)convertView.findViewById(R.id.btnCommandAction);
+            fields.imageButton = (ImageButton)convertView.findViewById(R.id.btnEditCommand);
 
             convertView.setTag(fields);
         } else {
@@ -148,7 +147,7 @@ public class CommandListAdapter extends BaseAdapter  {
 
         if(name == null || name.length() <= 0) name = "Unknown";
 
-        fields.imageView.setImageResource(command.getResourceId());
+        fields.imageButton.setImageResource(command.getResourceId());
         fields.commandName.setText(name);
         fields.commandStart.setText(cmdStart);
         if (command.getDisplayStatus()) {
@@ -159,20 +158,19 @@ public class CommandListAdapter extends BaseAdapter  {
         } else {
             fields.cpuUsage.setText("");
         }
-        fields.editButton.setOnClickListener(mActivity);
-        fields.editButton.setTag(new Integer(position));
-        fields.deleteButton.setOnClickListener(mActivity);
-        fields.deleteButton.setTag(new Integer(position));
+        fields.imageButton.setOnClickListener(mActivity);
+        fields.imageButton.setTag(new Integer(position));
+        fields.playButton.setOnClickListener(mActivity);
+        fields.playButton.setTag(new Integer(position));
 
 		return convertView;
 	}
 	
 	private class FieldReferences {
-        ImageView imageView;
         TextView commandName;
 		TextView commandStart;
         TextView cpuUsage;
-        ImageButton editButton;
-        ImageButton deleteButton;
+        ImageButton playButton;
+        ImageButton imageButton;
 	}
 }
