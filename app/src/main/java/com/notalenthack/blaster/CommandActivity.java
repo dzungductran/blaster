@@ -383,6 +383,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
                             outType, command.getCommandStart());
+                    command.setStatus(Command.Status.NOT_RUNNING);
                 } else if (status == Command.Status.RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
                             outType, command.getCommandStop());
