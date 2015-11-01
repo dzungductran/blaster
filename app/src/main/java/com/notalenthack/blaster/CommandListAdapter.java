@@ -31,6 +31,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -72,17 +73,18 @@ public class CommandListAdapter extends BaseAdapter  {
     }
 
 
-    public Set<String> getCommands() {
-        Set<String> commands = new HashSet<String>();
+    public String getCommands() {
+        JSONArray jsonArray = new JSONArray();
         for (Command cmd : mCommands) {
             try {
-                commands.add(cmd.toJSON().toString());
+                jsonArray.put(cmd.toJSON());
             } catch (JSONException ex) {
                 Log.e(TAG, "Error parsing JSON " + cmd.getName());
+                return "";
             }
         }
 
-        return commands;
+        return jsonArray.toString();
     }
 	
 	public Command getCommand(int index) {

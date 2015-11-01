@@ -51,11 +51,9 @@ import android.widget.Toast;
 
 import com.notalenthack.blaster.dialog.EditCommandDialog;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class that displays all the commands
@@ -411,7 +409,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command cmd = mListAdapter.getCommand(position);
         if (btn.getId() == R.id.edit) {
             Log.d(TAG, "Edit button click for position " + position);
-            //editCommand(cmd);
+            if (mPrevSlideOut != null) {
+                mPrevSlideOut.setVisibility(View.INVISIBLE);
+                mPrevSlideOut = null;
+            }
+            editCommand(cmd);
         } else if (btn.getId() == R.id.delete) {
             Log.d(TAG, "Delete button click for position " + position);
             if (mPrevSlideOut != null) {
@@ -419,9 +421,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 mPrevSlideOut = null;
             }
             mListAdapter.deleteCommand(cmd);
-            saveCommands(); // update commands in pref for presistent
-            mListAdapter.notifyDataSetChanged();
         }
+        saveCommands(); // update commands in pref for presistent
+        mListAdapter.notifyDataSetChanged();
     }
 
     // Callback when a command is created
@@ -436,7 +438,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putStringSet(mDevice.getAddress(), mListAdapter.getCommands());
+        editor.putString(mDevice.getAddress(), mListAdapter.getCommands());
         editor.commit();
     }
 
@@ -444,35 +446,63 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Get the feeds
-        Set<String> commandStrs = preferences.getStringSet(mDevice.getAddress(), getDefaultCommands());
-        for (String cmdStr : commandStrs) {
-            try {
-                mListAdapter.addCommand(new Command(new JSONObject(cmdStr)));
-            } catch (JSONException ex) {
-                Log.e(TAG, "Bad JSON " + cmdStr);
+        String jsonArrStr = preferences.getString(mDevice.getAddress(), getDefaultCommands().toString());
+        try {
+            JSONArray jsonArray = new JSONArray(jsonArrStr);
+            int len = jsonArray.length();
+            for(int i = 0; i < len; ++i) {
+                JSONObject json = jsonArray.getJSONObject(i);
+                mListAdapter.addCommand(new Command(json));
             }
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
         }
     }
 
     // default set of commands
-    private Set<String> getDefaultCommands() {
-        Set<String> defCmds = new HashSet<String>();
+    private JSONArray getDefaultCommands() {
         Command cmd;
+        JSONArray jsonArray = new JSONArray();
 
         try {
             cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP, OBEX_FTP, false, false, true);
-            defCmds.add(cmd.toJSON().toString());
+            jsonArray.put(cmd.toJSON());
             cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", false, false, false);
-            defCmds.add(cmd.toJSON().toString());
+            jsonArray.put(cmd.toJSON());
             cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", false, false, false);
-            defCmds.add(cmd.toJSON().toString());
+            jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", false, false, false);
-            defCmds.add(cmd.toJSON().toString());
+            jsonArray.put(cmd.toJSON());
+
+
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc3", "", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls3", "/usr/bin/video stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls3", "/usr/bin/gps stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
+
+
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc1", "", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls1", "/usr/bin/video stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls1", "/usr/bin/gps stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
+
+
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc2", "", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls2", "/usr/bin/video stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls2", "/usr/bin/gps stop", false, false, false);
+            jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
+            return null;
         }
 
-        return defCmds;
+        return jsonArray;
     }
 
     // Touch listener to detect swipe
