@@ -26,6 +26,9 @@ package com.notalenthack.blaster;
  * Constants to use in app
  */
 public class Constants {
+    public static final String ACTION_REFRESH_STATUS = "com.notalenthack.blaster.refresh_status";
+    public static final int UPATE_STATUS_PERIOD = 60;   // update status every 60 secs
+
     // Message types sent from the BluetoothReadService Handler
     public static final int MESSAGE_STATE_CHANGE_CMD = 1;
     public static final int MESSAGE_READ_CMD = 2;

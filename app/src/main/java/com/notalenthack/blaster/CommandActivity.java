@@ -23,10 +23,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 package com.notalenthack.blaster;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +55,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+
 /**
  * Class that displays all the commands
  */
@@ -60,6 +67,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private static final String OBEX_FTP = "Serial OBEX FTP";
 
     private EdisonDevice mDevice;
+
+    // Broadcast receiver for receiving intents
+    private BroadcastReceiver mReceiver;
 
     // fields in the layout
     private TextView mModelName;
@@ -110,11 +120,10 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             getActionBar().setIcon(R.drawable.ic_action_navigation_previous_item);
 
             mSerialService = new BluetoothSerialService(this, mHandlerBT);
-
-            setupCommandList();
-
             mSerialService.connect(mDevice.getBluetoothDevice());
 
+            setupCommandList();
+            setupFilter();
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
@@ -281,6 +290,17 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 mSerialService.start();
             }
         }
+
+        setupFilter();
+
+        handleStatusUpdate();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -395,6 +415,35 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 mListAdapter.notifyDataSetChanged();
             }
         }
+    }
+
+    // Setup receiver to get message from alarm
+    private void setupFilter() {
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_REFRESH_STATUS);
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Got intent to clean up
+                if (intent.getAction().equals(Constants.ACTION_REFRESH_STATUS)) {
+                    if (D) Log.d(TAG, "onReceive intent " + intent.toString());
+                }
+            }
+        };
+        registerReceiver(mReceiver, filter);
+    }
+
+    private void handleStatusUpdate() {
+        // Setup expiration if we never get a message from the service
+        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent();
+        intent.setAction(Constants.ACTION_REFRESH_STATUS);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Set repeating updating of status, will need to cancel if activity is gone
+        Calendar cal = Calendar.getInstance();
+        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+                Constants.UPATE_STATUS_PERIOD*1000, pi);
     }
 
     private void saveCommands() {
