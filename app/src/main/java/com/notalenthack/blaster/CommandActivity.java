@@ -293,20 +293,19 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         setupFilter();
 
-        handleStatusUpdate();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        unregisterReceiver(mReceiver);
+        startStatusUpdate();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
+        if (mReceiver != null)
+            unregisterReceiver(mReceiver);
+        mReceiver = null;
+
+        cancelStatusUpdate();
+        
         if (mSerialService != null)
             mSerialService.stop();
     }
@@ -433,12 +432,22 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         registerReceiver(mReceiver, filter);
     }
 
-    private void handleStatusUpdate() {
+    private void startStatusUpdate() {
         // Setup expiration if we never get a message from the service
         AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent();
         intent.setAction(Constants.ACTION_REFRESH_STATUS);
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        am.cancel(pi);
+    }
+
+    private void cancelStatusUpdate() {
+        // Setup expiration if we never get a message from the service
+        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent();
+        intent.setAction(Constants.ACTION_REFRESH_STATUS);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         // Set repeating updating of status, will need to cancel if activity is gone
         Calendar cal = Calendar.getInstance();
