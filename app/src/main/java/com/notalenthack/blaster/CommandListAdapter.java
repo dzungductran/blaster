@@ -35,7 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class CommandListAdapter extends BaseAdapter  {
@@ -43,7 +43,6 @@ public class CommandListAdapter extends BaseAdapter  {
     private static final String TAG = CommandListAdapter.class.getCanonicalName();
 
 	private ArrayList<Command> mCommands;
-    private HashMap<String, Command> mMap;
 	private LayoutInflater mInflater;
     private CommandActivity mActivity;
 
@@ -51,12 +50,10 @@ public class CommandListAdapter extends BaseAdapter  {
 		super();
         mActivity = par;
 		mCommands  = new ArrayList<Command>();
-        mMap = new HashMap<String, Command>();
 		mInflater = par.getLayoutInflater();
 	}
 	
 	public void addCommand(Command command) {
-        mMap.put(command.getCommandStart()+"_"+command.getCommandStop()+"_"+command.getResourceId(), command);   // allow for duplicate, we don't check
         mCommands.add(command);
 	}
 
@@ -67,32 +64,33 @@ public class CommandListAdapter extends BaseAdapter  {
     }
 
     public void deleteCommand(Command command) {
-        mMap.remove(command.getCommandStart()+"_"+command.getCommandStop()+"_"+command.getResourceId());
         mCommands.remove(command);
     }
 
 
-    public String getCommands() {
+    public JSONArray getCommandsAsJSONArray() {
         JSONArray jsonArray = new JSONArray();
         for (Command cmd : mCommands) {
             try {
                 jsonArray.put(cmd.toJSON());
             } catch (JSONException ex) {
                 Log.e(TAG, "Error parsing JSON " + cmd.getName());
-                return "";
+                jsonArray = new JSONArray(); // empty json array
+                return jsonArray;
             }
         }
 
-        return jsonArray.toString();
+        return jsonArray;
     }
-	
+
+    public List<Command> getCommands() { return mCommands; }
+
 	public Command getCommand(int index) {
 		return mCommands.get(index);
 	}
 
     public void clearList() {
         mCommands.clear();
-        mMap.clear();
     }
 
     public void updateStatus(int pos, Command.Status status) {

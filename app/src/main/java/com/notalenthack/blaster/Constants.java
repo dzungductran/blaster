@@ -62,6 +62,7 @@ public class Constants {
     public static final String KEY_CACHE_SIZE     = "cache_size";
     public static final String KEY_MODEL_NAME     = "model_name";
     public static final String KEY_VENDOR_ID      = "vendor_id";
+    public static final String KEY_PROCESS_STATE  = "process_state";
 
     // serial command
     // commands between Client and Server. Server is on Edison side and

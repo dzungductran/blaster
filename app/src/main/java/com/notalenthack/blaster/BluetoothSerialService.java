@@ -411,6 +411,7 @@ public class BluetoothSerialService {
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
+                sendMessageToast("Exception during write" + e);
             }
         }
 
@@ -419,6 +420,7 @@ public class BluetoothSerialService {
                 mmSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "close() of connect socket failed", e);
+                sendMessageToast("close() of connect socket failed" + e);
             }
         }
     }
@@ -432,11 +434,9 @@ public class BluetoothSerialService {
     }
 
     /*
-     * byte 1 = command
-     * byte 2 = type (0-stdout, 1-stdin, 2-stderr, 3-stdout&stderr
-     * byte 3-N = command string
+     * Format a JSON to send over the wire
      */
-    public void sendCommand(int cmd, String type,  String cmdStr) {
+    public void sendCommand(int cmd, String cmdStr, String type) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
@@ -445,13 +445,13 @@ public class BluetoothSerialService {
             sendJSON(jsonObject);
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON " + ex.getMessage());
+            sendMessageToast("Bad JSON " + ex.getMessage());
             return;
         }
     }
 
     /*
-    * byte 1 = command
-    * byte 2-N = command string
+     * Format a JSON to send over the wire
     */
     public void sendCommand(int cmd, String cmdStr) {
         JSONObject jsonObject = new JSONObject();
@@ -461,12 +461,30 @@ public class BluetoothSerialService {
             sendJSON(jsonObject);
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON " + ex.getMessage());
+            sendMessageToast("Bad JSON " + ex.getMessage());
             return;
         }
     }
 
     /*
-    * byte 1 = command
+    * Format a JSON to send over the wire
+    */
+    public void sendCommand(int cmd, String cmdStr, int identifier) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.KEY_COMMAND_TYPE, cmd);
+            jsonObject.put(Constants.KEY_COMMAND, cmdStr);
+            jsonObject.put(Constants.KEY_IDENTIFIER, identifier);
+            sendJSON(jsonObject);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
+            sendMessageToast("Bad JSON " + ex.getMessage());
+            return;
+        }
+    }
+
+    /*
+     * Format a JSON to send over the wire
     */
     public void sendCommand(int cmd) {
         JSONObject jsonObject = new JSONObject();
@@ -475,6 +493,7 @@ public class BluetoothSerialService {
             sendJSON(jsonObject);
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON " + ex.getMessage());
+            sendMessageToast("Bad JSON " + ex.getMessage());
             return;
         }
     }

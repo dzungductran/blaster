@@ -56,6 +56,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Class that displays all the commands
@@ -205,7 +206,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                             case Constants.SERIAL_CMD_STATUS:
                                 int percent = jsonObject.getInt(Constants.KEY_PERCENT);
                                 int id = jsonObject.getInt(Constants.KEY_IDENTIFIER);
+                                String state = jsonObject.getString(Constants.KEY_PROCESS_STATE);
                                 mListAdapter.updateCpuUsage(id, percent);
+                                mListAdapter.updateStatus(id, getStatusFromState(state));
                                 mListAdapter.notifyDataSetChanged();
                                 break;
 
@@ -305,7 +308,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         mReceiver = null;
 
         cancelStatusUpdate();
-        
+
         if (mSerialService != null)
             mSerialService.stop();
     }
@@ -316,6 +319,28 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         if (out.length > 0) {
             mSerialService.write(out);
+        }
+    }
+
+    /* Mapping Linux state to our Enum status
+     *  http://man7.org/linux/man-pages/man5/proc.5.html
+    *
+    *  R  Running
+    *  S  Sleeping in an interruptible wait
+    *  D  Waiting in uninterruptible disk sleep
+    *  Z  Zombie
+    *  T  Stopped (on a signal) or (before Linux 2.6.33) trace stopped
+    *  t  Tracing stop (Linux 2.6.33 onward)
+    *  X  Dead (from Linux 2.6.0 onward)
+    */
+    private Command.Status getStatusFromState(String state) {
+        // only care about R, S, Z
+        byte[] s = state.getBytes();
+        switch (s[0]) {
+            case 'R': return Command.Status.RUNNING;
+            case 'S': return Command.Status.SLEEPING;
+            case 'Z': return Command.Status.ZOMBIE;
+            default: return Command.Status.NOT_RUNNING;
         }
     }
 
@@ -396,15 +421,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 }
                 if (status == Command.Status.NOT_RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            outType, command.getCommandStart());
+                            command.getCommandStart(), outType);
                     command.setStatus(Command.Status.RUNNING);
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
-                            outType, command.getCommandStart());
+                            command.getCommandStart(), outType);
                     command.setStatus(Command.Status.NOT_RUNNING);
                 } else if (status == Command.Status.RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            outType, command.getCommandStop());
+                            command.getCommandStop(), outType);
                     command.setStatus(Command.Status.NOT_RUNNING);
                 } else {
                     Toast.makeText(getApplicationContext(),
@@ -426,6 +451,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 // Got intent to clean up
                 if (intent.getAction().equals(Constants.ACTION_REFRESH_STATUS)) {
                     if (D) Log.d(TAG, "onReceive intent " + intent.toString());
+                    List<Command> commands = mListAdapter.getCommands();
+                    // this list should be in the same order as in the ListBox
+                    int i=0;
+                    for (Command cmd : commands) {
+                        if (cmd.getDisplayStatus()) {
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_STATUS, cmd.getCommandStart(), i);
+                        }
+                        i++;
+                    }
                 }
             }
         };
@@ -459,14 +493,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putString(mDevice.getAddress(), mListAdapter.getCommands());
+        editor.putString(mDevice.getAddress(), mListAdapter.getCommandsAsJSONArray().toString());
         editor.commit();
     }
 
     private void restoreCommands() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Get the feeds
+        // Get the stored command
         String jsonArrStr = preferences.getString(mDevice.getAddress(), getDefaultCommands().toString());
         try {
             JSONArray jsonArray = new JSONArray(jsonArrStr);
