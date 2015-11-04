@@ -162,11 +162,16 @@ public class CommandListAdapter extends BaseAdapter  {
             fields.imageView.setOnClickListener(mActivity);
         }
         fields.imageView.setTag(new Integer(position));
-        if (command.getStatus() == Command.Status.NOT_RUNNING) {
-            fields.playButton.setImageDrawable(mActivity.getResources().getDrawable(R.drawable.ic_action_play));
+        if (command.getCommandStart().equalsIgnoreCase(Command.OBEX_FTP_START)) {
+            fields.playButton.setImageDrawable(mActivity.getResources().getDrawable(R.drawable.ic_file));
         } else {
-            fields.playButton.setImageDrawable(mActivity.getResources().getDrawable(R.drawable.ic_action_stop));
+            if (command.getStatus() == Command.Status.NOT_RUNNING) {
+                fields.playButton.setImageDrawable(mActivity.getResources().getDrawable(R.drawable.ic_action_play));
+            } else {
+                fields.playButton.setImageDrawable(mActivity.getResources().getDrawable(R.drawable.ic_action_stop));
+            }
         }
+
         fields.playButton.setOnClickListener(mActivity);
         fields.playButton.setTag(new Integer(position));
 

@@ -49,6 +49,10 @@ public class Command implements Parcelable {
 
     public enum Status { RUNNING, SLEEPING, ZOMBIE, NOT_RUNNING };
 
+    public static final String OBEX_FTP_START = "systemctl start obex";
+    public static final String OBEX_FTP_STOP = "systemctl stop obex";
+    public static final String OBEX_FTP_STAT = "/usr/lib/bluez5/bluetooth/obexd";
+
     private String mCommandStart;
     private String mCommandStop;
     private String mCommandStat;
