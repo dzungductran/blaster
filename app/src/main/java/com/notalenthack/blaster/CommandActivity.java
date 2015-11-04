@@ -65,10 +65,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
 
-    private static final String OBEX_FTP_START = "systemctl start obex";
-    private static final String OBEX_FTP_STOP = "systemctl stop obex";
-    private static final String OBEX_FTP_STAT = "/usr/lib/bluez5/bluetooth/obexd";
-
     private EdisonDevice mDevice;
 
     // Broadcast receiver for receiving intents
@@ -409,7 +405,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command command = mListAdapter.getCommand(position);
         if (command != null) {
             if (D) Log.d(TAG, "command " + command.getCommandStart());
-            if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP_START)) {
+            if (command.getCommandStart().equalsIgnoreCase(Command.OBEX_FTP_START)) {
                 Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
                 launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, mDevice);
 
@@ -523,7 +519,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         JSONArray jsonArray = new JSONArray();
 
         try {
-            cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP_START, OBEX_FTP_STOP, OBEX_FTP_STAT, false, true, true);
+            cmd = new Command("Download files", R.drawable.ic_sample_3, Command.OBEX_FTP_START, Command.OBEX_FTP_STOP, Command.OBEX_FTP_STAT, false, true, true);
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", "", false, false, false);
             jsonArray.put(cmd.toJSON());
