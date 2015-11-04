@@ -484,6 +484,24 @@ public class BluetoothSerialService {
     }
 
     /*
+    * Format a JSON to send over the wire
+    */
+    public void sendStatusCommand(String cmdStr, int identifier, boolean quick) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.KEY_COMMAND_TYPE, Constants.SERIAL_CMD_STATUS);
+            jsonObject.put(Constants.KEY_COMMAND, cmdStr);
+            jsonObject.put(Constants.KEY_IDENTIFIER, identifier);
+            jsonObject.put(Constants.KEY_QUICK_STATUS, quick ? 1 : 0);
+            sendJSON(jsonObject);
+        } catch (JSONException ex) {
+            Log.e(TAG, "Bad JSON " + ex.getMessage());
+            sendMessageToast("Bad JSON " + ex.getMessage());
+            return;
+        }
+    }
+
+    /*
      * Format a JSON to send over the wire
     */
     public void sendCommand(int cmd) {
@@ -503,6 +521,10 @@ public class BluetoothSerialService {
         int len = jsonObject.toString().length();
         byte[] out = ByteBuffer.allocate(len)
                 .put(jsonObject.toString().getBytes()).array();  // cmdStr
+        if (D) {
+            String str = new String(out);
+            Log.d(TAG, "Send JSON: " + str);
+        }
         write( out );
     }
 

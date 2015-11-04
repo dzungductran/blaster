@@ -63,7 +63,7 @@ import java.util.List;
  */
 public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback, View.OnClickListener  {
     private static final String TAG = "CommandActivity";
-    private static final boolean D = true;
+    private static final boolean D = false;
 
     private EdisonDevice mDevice;
 
@@ -140,6 +140,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 handlePlayCommand(position);
             }
         });
+
+        // do a quick status update on the commands
+        List<Command> commands = mListAdapter.getCommands();
+        // this list should be in the same order as in the ListBox
+        int i = 0;
+        for (Command cmd : commands) {
+            mSerialService.sendStatusCommand(cmd.getCommandStat(), i, true);
+            i++;
+        }
     }
 
     // The Handler that gets information back from the BluetoothService
@@ -204,7 +213,10 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                                 int percent = jsonObject.getInt(Constants.KEY_PERCENT);
                                 int id = jsonObject.getInt(Constants.KEY_IDENTIFIER);
                                 String state = jsonObject.getString(Constants.KEY_PROCESS_STATE);
-                                mListAdapter.updateCpuUsage(id, percent);
+                                boolean quick = jsonObject.getInt(Constants.KEY_QUICK_STATUS) == 1 ? true : false;
+                                if (!quick) {
+                                    mListAdapter.updateCpuUsage(id, percent);
+                                }
                                 mListAdapter.updateStatus(id, getStatusFromState(state));
                                 mListAdapter.notifyDataSetChanged();
                                 break;
@@ -421,21 +433,18 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 if (status == Command.Status.NOT_RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
                             command.getCommandStart(), outType);
-                    command.setStatus(Command.Status.RUNNING);
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
                             command.getCommandStart(), outType);
-                    command.setStatus(Command.Status.NOT_RUNNING);
-                } else if (status == Command.Status.RUNNING) {
+                } else if (status == Command.Status.RUNNING || status == Command.Status.SLEEPING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
                             command.getCommandStop(), outType);
-                    command.setStatus(Command.Status.NOT_RUNNING);
                 } else {
                     Toast.makeText(getApplicationContext(),
                             "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
                     return;
                 }
-                mListAdapter.notifyDataSetChanged();
+                mSerialService.sendStatusCommand(command.getCommandStat(), position, true);
             }
         }
     }
@@ -455,7 +464,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                     int i=0;
                     for (Command cmd : commands) {
                         if (cmd.getDisplayStatus()) {
-                            mSerialService.sendCommand(Constants.SERIAL_CMD_STATUS, cmd.getCommandStat(), i);
+                            mSerialService.sendStatusCommand(cmd.getCommandStat(), i, false);
                         }
                         i++;
                     }
@@ -506,7 +515,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             int len = jsonArray.length();
             for(int i = 0; i < len; ++i) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                mListAdapter.addCommand(new Command(json));
+                Command command = new Command(json);
+                command.setStatus(Command.Status.NOT_RUNNING);
+                mListAdapter.addCommand(command);
             }
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON " + ex.getMessage());
