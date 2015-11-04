@@ -517,6 +517,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 JSONObject json = jsonArray.getJSONObject(i);
                 Command command = new Command(json);
                 command.setStatus(Command.Status.NOT_RUNNING);
+                command.setCpuUsage(0);
                 mListAdapter.addCommand(command);
             }
         } catch (JSONException ex) {
