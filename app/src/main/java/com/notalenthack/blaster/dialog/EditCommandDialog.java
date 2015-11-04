@@ -54,14 +54,16 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     private EditText mNameText;
     private EditText mStartText;
     private EditText mStopText;
+    private EditText mStatText;
     private ImageButton mIconButton;
 
     public interface CommandCallback {
-        public void newCommand(Command command);
+        public void newCommand(Command command, boolean bNew);
     }
 
     private CommandCallback mCallback = null;
     private Command mCommand = null;
+    private boolean bNewCmd;
 
     private void showIconPicker() {
 
@@ -92,12 +94,6 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         EditCommandDialog f = new EditCommandDialog();
         f.setCallback(callback);
         f.setCommand(command);
-
-        // Save Arguments (not sure how to save callback)
-        Bundle args = new Bundle();
-        args.putParcelable(Constants.KEY_COMMAND_STATE, command);
-        f.setArguments(args);
-
         return f;
     }
 
@@ -112,9 +108,17 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     // set the command
     public void setCommand(Command command) {
         if (command == null) {
-            command = new Command();
+            mCommand = new Command();
+            bNewCmd = true;
+        } else {
+            mCommand = command;
+            if (command.getName().isEmpty() && command.getCommandStart().isEmpty() &&
+                    command.getCommandStop().isEmpty() && command.getResourceId() == R.drawable.unknown_item) {
+                bNewCmd = true;
+            } else {
+                bNewCmd = false;
+            }
         }
-        mCommand = command;
     }
 
     @Override
@@ -137,6 +141,8 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         mStartText.setText(mCommand.getCommandStart());
         mStopText=(EditText)view.findViewById(R.id.stopCommand);
         mStopText.setText(mCommand.getCommandStop());
+        mStatText=(EditText)view.findViewById(R.id.statCommand);
+        mStatText.setText(mCommand.getCommandStat());
 
         mIconButton=(ImageButton)view.findViewById(R.id.commandButton);
         mIconButton.setImageResource(mCommand.getResourceId());
@@ -184,7 +190,8 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
                     mCommand.setName(mNameText.getText().toString());
                     mCommand.setStartCommand(mStartText.getText().toString());
                     mCommand.setStopCommand(mStopText.getText().toString());
-                    mCallback.newCommand(mCommand);
+                    mCommand.setStatCommand(mStatText.getText().toString());
+                    mCallback.newCommand(mCommand, bNewCmd);
                 }
                 dismiss();
             }

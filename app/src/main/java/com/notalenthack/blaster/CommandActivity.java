@@ -65,7 +65,9 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private static final String TAG = "CommandActivity";
     private static final boolean D = true;
 
-    private static final String OBEX_FTP = "Serial OBEX FTP";
+    private static final String OBEX_FTP_START = "systemctl start obex";
+    private static final String OBEX_FTP_STOP = "systemctl stop obex";
+    private static final String OBEX_FTP_STAT = "/usr/lib/bluez5/bluetooth/obexd";
 
     private EdisonDevice mDevice;
 
@@ -124,7 +126,6 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mSerialService.connect(mDevice.getBluetoothDevice());
 
             setupCommandList();
-            setupFilter();
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
@@ -395,9 +396,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     }
 
     // Callback when a command is created
-    public void newCommand(Command command) {
+    public void newCommand(Command command, boolean bNew) {
         if (D) Log.d(TAG, "command is done " + command.getName());
-        mListAdapter.addCommand(command);
+        if (bNew) {
+            mListAdapter.addCommand(command);
+        }
         mListAdapter.notifyDataSetChanged();
         saveCommands();
     }
@@ -406,7 +409,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         Command command = mListAdapter.getCommand(position);
         if (command != null) {
             if (D) Log.d(TAG, "command " + command.getCommandStart());
-            if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP)) {
+            if (command.getCommandStart().equalsIgnoreCase(OBEX_FTP_START)) {
                 Intent launchingIntent = new Intent(mThisActivity, FileListActivity.class);
                 launchingIntent.putExtra(Constants.KEY_DEVICE_STATE, mDevice);
 
@@ -456,7 +459,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                     int i=0;
                     for (Command cmd : commands) {
                         if (cmd.getDisplayStatus()) {
-                            mSerialService.sendCommand(Constants.SERIAL_CMD_STATUS, cmd.getCommandStart(), i);
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_STATUS, cmd.getCommandStat(), i);
                         }
                         i++;
                     }
@@ -473,7 +476,10 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         intent.setAction(Constants.ACTION_REFRESH_STATUS);
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        am.cancel(pi);
+        // Set repeating updating of status, will need to cancel if activity is gone
+        Calendar cal = Calendar.getInstance();
+        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
+                Constants.UPATE_STATUS_PERIOD * 1000, pi);
     }
 
     private void cancelStatusUpdate() {
@@ -483,10 +489,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         intent.setAction(Constants.ACTION_REFRESH_STATUS);
         PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        // Set repeating updating of status, will need to cancel if activity is gone
-        Calendar cal = Calendar.getInstance();
-        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-                Constants.UPATE_STATUS_PERIOD*1000, pi);
+        am.cancel(pi);
     }
 
     private void saveCommands() {
@@ -520,13 +523,13 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         JSONArray jsonArray = new JSONArray();
 
         try {
-            cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP, OBEX_FTP, false, false, true);
+            cmd = new Command("Download files", R.drawable.ic_sample_3, OBEX_FTP_START, OBEX_FTP_STOP, OBEX_FTP_STAT, false, true, true);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", false, false, false);
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", "", false, false, false);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", false, false, false);
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", "", false, false, false);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", false, false, false);
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", "", false, false, false);
             jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());

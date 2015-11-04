@@ -62,12 +62,28 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
         </EditText>
+        <TextView
+            android:id="@+id/statLabel"
+            android:text="Stat Process:"
+            android:layout_below="@+id/stopCommand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/stopLabel"
+            android:layout_marginTop="10dp" />
+        <EditText
+            android:id="@+id/statCommand"
+            android:hint="Enter process for status"
+            android:layout_below="@+id/statLabel"
+            android:layout_alignLeft="@+id/stopCommand"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        </EditText>
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Capture output"
             android:id="@+id/captureOutput"
-            android:layout_below="@+id/stopCommand"
+            android:layout_below="@+id/statCommand"
             android:layout_marginTop="10dp"
             android:layout_alignStart="@+id/startLabel"
             android:textAppearance="?android:attr/textAppearanceSmall"/>
