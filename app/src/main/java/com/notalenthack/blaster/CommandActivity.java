@@ -43,6 +43,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -78,6 +79,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private ImageView mDeviceStatus;
     private ImageView mBatteryStatus;
     private ListView mCmdListView;
+    private Button mBtnExecAll;
     private Activity mThisActivity;
 
     private View mPrevSlideOut = null;
@@ -113,6 +115,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         mDeviceStatus = (ImageView) findViewById(R.id.deviceStatusIcon);
         mBatteryStatus = (ImageView) findViewById(R.id.batteryStatus);
         mCmdListView = (ListView) findViewById(R.id.listView);;
+        mBtnExecAll = (Button)findViewById(R.id.btnExecAll);
 
         if (mDevice != null) {
             getActionBar().setHomeButtonEnabled(true);
@@ -121,7 +124,28 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mSerialService = new BluetoothSerialService(this, mHandlerBT);
             mSerialService.connect(mDevice.getBluetoothDevice());
 
+            // Execute all the commands
+            mBtnExecAll.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // do a quick status update on the commands
+                    List<Command> commands = mListAdapter.getCommands();
+                    // this list should be in the same order as in the ListBox
+                    for (Command cmd : commands) {
+                        if (!cmd.getCommandStart().equalsIgnoreCase(Command.OBEX_FTP_START)) {
+                            String outType = Constants.SERIAL_TYPE_STDERR;
+                            if (cmd.getDisplayOutput()) {
+                                outType = Constants.SERIAL_TYPE_STDOUT_ERR; // capture stdout+stderr
+                            }
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                                    cmd.getCommandStart(), outType);
+                        }
+                    }
+                }
+            });
+
             setupCommandList();
+
         } else {
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
@@ -533,11 +557,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         try {
             cmd = new Command("Download files", R.drawable.ic_sample_3, Command.OBEX_FTP_START, Command.OBEX_FTP_STOP, Command.OBEX_FTP_STAT, false, true, true);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", "", false, false, false);
-            jsonArray.put(cmd.toJSON());
             cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", "", false, false, false);
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, Command.LSM9DS0_START, Command.LSM9DS0_STOP, Command.LSM9DS0_STAT, false, false, false);
+            jsonArray.put(cmd.toJSON());
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", "", false, false, false);
             jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
