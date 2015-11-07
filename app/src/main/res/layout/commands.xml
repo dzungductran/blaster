@@ -77,5 +77,12 @@
         android:id="@+id/listView"
         android:layout_marginLeft="10dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dip"
+        android:layout_weight="1"/>
+    <Button
+        android:id="@+id/btnExecAll"
+        android:text="@string/execute_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"/>
 </LinearLayout>

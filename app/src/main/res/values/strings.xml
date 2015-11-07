@@ -34,5 +34,6 @@
     <string name="browse_files">Browse Files</string>
     <string name="edit">Edit...</string>
     <string name="delete">Delete</string>
+    <string name="execute_all">Execute All</string>
 
 </resources>
