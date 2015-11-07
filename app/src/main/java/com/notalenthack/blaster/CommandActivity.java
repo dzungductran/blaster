@@ -561,7 +561,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, Command.LSM9DS0_START, Command.LSM9DS0_STOP, Command.LSM9DS0_STAT, false, false, false);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, "/bin/ls /abc", "", "", false, false, false);
+            cmd = new Command("Launch Rocket", R.drawable.ic_launcher, Command.LAUNCHER_START, Command.LAUNCHER_STOP, Command.LAUNCHER_STAT, false, false, false);
             jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());

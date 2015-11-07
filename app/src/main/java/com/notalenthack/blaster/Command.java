@@ -57,6 +57,10 @@ public class Command implements Parcelable {
     public static final String LSM9DS0_STOP  = "systemctl stop 9DOF";
     public static final String LSM9DS0_STAT  = "/home/root/LSM9DS0/9DOFd";
 
+    public static final String LAUNCHER_START = "systemctl start launcher";
+    public static final String LAUNCHER_STOP  = "systemctl stop launcher";
+    public static final String LAUNCHER_STAT  = "/home/root/launcher/launcherd";
+
     private String mCommandStart;
     private String mCommandStop;
     private String mCommandStat;
