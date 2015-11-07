@@ -431,7 +431,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     public void newCommand(Command command, boolean bNew) {
         if (D) Log.d(TAG, "command is done " + command.getName());
         if (bNew) {
-            mListAdapter.addCommand(command);
+            mListAdapter.addCommand(1, command);
         }
         mListAdapter.notifyDataSetChanged();
         saveCommands();

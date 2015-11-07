@@ -57,6 +57,10 @@ public class CommandListAdapter extends BaseAdapter  {
         mCommands.add(command);
 	}
 
+    public void addCommand(int index, Command command) {
+        mCommands.add(index, command);
+    }
+
     public void addCommands(Set<Command> commands) {
         for (Command command : commands) {
             addCommand(command);
