@@ -53,6 +53,10 @@ public class Command implements Parcelable {
     public static final String OBEX_FTP_STOP = "systemctl stop obex";
     public static final String OBEX_FTP_STAT = "/usr/lib/bluez5/bluetooth/obexd";
 
+    public static final String LSM9DS0_START = "systemctl start 9DOF";
+    public static final String LSM9DS0_STOP  = "systemctl stop 9DOF";
+    public static final String LSM9DS0_STAT  = "/home/root/LSM9DS0/9DOFd";
+
     private String mCommandStart;
     private String mCommandStop;
     private String mCommandStat;

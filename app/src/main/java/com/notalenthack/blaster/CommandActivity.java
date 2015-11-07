@@ -312,11 +312,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     protected void onDestroy() {
         super.onDestroy();
 
+        cancelStatusUpdate();
+
         if (mReceiver != null)
             unregisterReceiver(mReceiver);
         mReceiver = null;
-
-        cancelStatusUpdate();
 
         if (mSerialService != null)
             mSerialService.stop();
@@ -537,7 +537,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls", "/usr/bin/video stop", "", false, false, false);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, "/bin/ls", "/usr/bin/gps stop", "", false, false, false);
+            cmd = new Command("Record GPS data", R.drawable.ic_sample_8, Command.LSM9DS0_START, Command.LSM9DS0_STOP, Command.LSM9DS0_STAT, false, false, false);
             jsonArray.put(cmd.toJSON());
         } catch (JSONException ex) {
             Log.e(TAG, "Bad JSON object " + ex.toString());
