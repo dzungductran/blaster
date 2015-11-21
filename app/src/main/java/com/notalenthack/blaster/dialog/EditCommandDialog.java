@@ -48,7 +48,7 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     private static final boolean D = true;
 
     // TAGs for dialogs
-    public static final String TAG_ICON_PICKER_DIALOG = "EditCommandDialog";
+    public static final String TAG_EDIT_COMMAND_DIALOG = "EditCommandDialog";
 
     private Activity mActivity;
     private EditText mNameText;
@@ -132,8 +132,6 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
 
         if (D) Log.d(TAG, "Showing Dialog");
         View view = inflater.inflate(R.layout.command_detail_dlg, container, false);
-
-        getDialog().setTitle(getString(R.string.command_details));
 
         mNameText=(EditText)view.findViewById(R.id.name);
         mNameText.setText(mCommand.getName());

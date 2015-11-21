@@ -51,6 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notalenthack.blaster.dialog.EditCommandDialog;
+import com.notalenthack.blaster.dialog.LaunchCommandDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -380,7 +381,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
     private void editCommand(Command command) {
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(EditCommandDialog.TAG_ICON_PICKER_DIALOG);
+        Fragment prev = getFragmentManager().findFragmentByTag(EditCommandDialog.TAG_EDIT_COMMAND_DIALOG);
         if (prev != null) {
             ft.remove(prev);
         }
@@ -388,9 +389,22 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
 
         // Create and show the dialog.
         DialogFragment newFragment = EditCommandDialog.newInstance(command, this);
-        newFragment.show(ft, EditCommandDialog.TAG_ICON_PICKER_DIALOG);
+        newFragment.show(ft, EditCommandDialog.TAG_EDIT_COMMAND_DIALOG);
     }
 
+    private void launchCommand() {
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(LaunchCommandDialog.TAG_LAUNCH_DIALOG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        DialogFragment newFragment = LaunchCommandDialog.newInstance();
+        newFragment.show(ft, LaunchCommandDialog.TAG_LAUNCH_DIALOG);
+    }
 
     @Override
     public void onClick(View v) {
