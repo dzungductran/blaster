@@ -27,6 +27,8 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,10 +37,14 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.notalenthack.blaster.Command;
 import com.notalenthack.blaster.Constants;
 import com.notalenthack.blaster.R;
+
+import javax.obex.PasswordAuthentication;
 
 /**
  * Edit command dialog
@@ -56,6 +62,8 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     private EditText mStopText;
     private EditText mStatText;
     private ImageButton mIconButton;
+    private RadioButton mRKillTerm;
+    private RadioButton mRKillStop;
 
     public interface CommandCallback {
         public void newCommand(Command command, boolean bNew);
@@ -82,7 +90,7 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
     // Callback when Icon is selected.
     public void iconSelected(long resId) {
         if (D) Log.d(TAG, "Icon with resId selected " + resId);
-        mCommand.setResourceId((int)resId);
+        mCommand.setResourceId((int) resId);
         mIconButton.setImageResource(mCommand.getResourceId());
     }
 
@@ -133,12 +141,46 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         if (D) Log.d(TAG, "Showing Dialog");
         View view = inflater.inflate(R.layout.command_detail_dlg, container, false);
 
+        mStopText=(EditText)view.findViewById(R.id.stopCommand);
+
+        mRKillStop = (RadioButton)view.findViewById(R.id.rkillstop);
+        mRKillTerm = (RadioButton)view.findViewById(R.id.rkillterm);
+        mStopText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().isEmpty()) {
+                    mRKillStop.setEnabled(true);
+                    mRKillTerm.setEnabled(true);
+                } else {
+                    mRKillStop.setChecked(false);
+                    mRKillTerm.setChecked(false);
+                    mRKillStop.setEnabled(false);
+                    mRKillTerm.setEnabled(false);
+                }
+            }
+        });
+
         mNameText=(EditText)view.findViewById(R.id.name);
         mNameText.setText(mCommand.getName());
         mStartText=(EditText)view.findViewById(R.id.startCommand);
         mStartText.setText(mCommand.getCommandStart());
-        mStopText=(EditText)view.findViewById(R.id.stopCommand);
-        mStopText.setText(mCommand.getCommandStop());
+
+        if (mCommand.getCommandStop().isEmpty()) {
+            updateRadioButtons();
+        } else {
+            mStopText.setText(mCommand.getCommandStop());
+        }
+
         mStatText=(EditText)view.findViewById(R.id.statCommand);
         mStatText.setText(mCommand.getCommandStat());
 
@@ -199,6 +241,14 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         getDialog().setTitle(R.string.command_details);
 
         return view;
+    }
+
+    private void updateRadioButtons() {
+        if (mCommand.getKillMethod() == Command.KillMethod.STOP) {
+            mRKillStop.setChecked(true);
+        } else if (mCommand.getKillMethod() == Command.KillMethod.TERMINATE) {
+            mRKillTerm.setChecked(true);
+        }
     }
 
     /* Init the font manager

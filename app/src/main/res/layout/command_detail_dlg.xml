@@ -62,28 +62,29 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
         </EditText>
-        <CheckBox
-            android:layout_width="wrap_content"
+        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Kill Terminate"
-            android:id="@+id/killterm"
             android:layout_below="@+id/stopCommand"
-            android:layout_marginTop="4dp"
-            android:layout_alignStart="@+id/stopCommand"
-            android:textAppearance="?android:attr/textAppearanceSmall"/>
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Kill Stop"
-            android:id="@+id/killstop"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:layout_alignTop="@+id/killterm"
             android:layout_marginLeft="20dp"
-            android:layout_toEndOf="@+id/killterm" />
+            android:id="@+id/radiogroup"
+            android:orientation="horizontal">
+            <RadioButton android:id="@+id/rkillterm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/killterm"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+            <RadioButton android:id="@+id/rkillstop"
+                android:layout_marginLeft="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/killstop"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+        </RadioGroup>
         <TextView
             android:id="@+id/statLabel"
             android:text="Stat Process:"
-            android:layout_below="@+id/killterm"
+            android:layout_below="@+id/radiogroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/stopLabel"

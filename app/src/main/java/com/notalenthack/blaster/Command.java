@@ -41,6 +41,7 @@ public class Command implements Parcelable {
     private static final String KEY_CMD_STAT="cmdStat"; // Command to stat for
     private static final String KEY_NAME="name";
     private static final String KEY_STATUS="status";
+    private static final String KEY_KILLMETHOD="kill_method";
     private static final String KEY_CPU_USAGE="cpuUsage";
     private static final String KEY_DISPLAY_OUTPUT="displayOutput";
     private static final String KEY_DISPLAY_STATUS="displayStatus";
@@ -48,6 +49,8 @@ public class Command implements Parcelable {
     private static final String KEY_RES_ID="resId";
 
     public enum Status { RUNNING, SLEEPING, ZOMBIE, NOT_RUNNING };
+
+    public enum KillMethod { NONE, TERMINATE, STOP };
 
     public static final String OBEX_FTP_START = "systemctl start obex";
     public static final String OBEX_FTP_STOP = "systemctl stop obex";
@@ -70,18 +73,21 @@ public class Command implements Parcelable {
     private int mCpuUsage;
     private boolean mDisplayOutput;
     private boolean mDisplayStatus;
+    private KillMethod mKillMethod;
     private int mCommandResId;
 
     public Command() {
-       this("", R.drawable.unknown_item, "", "", "", Status.NOT_RUNNING, 0, false, false, false);
+       this("", R.drawable.unknown_item, "", "", KillMethod.NONE, "", Status.NOT_RUNNING, 0, false, false, false);
     }
 
-    public Command(String name, int resId, String cmdStart, String cmdStop, String cmdStat,
-                   Status status, int cpu, boolean bOutput, boolean bStatus, boolean bSystem) {
+    public Command(String name, int resId, String cmdStart, String cmdStop, KillMethod method,
+                   String cmdStat, Status status, int cpu, boolean bOutput,
+                   boolean bStatus, boolean bSystem) {
         mName = name;
         mCommandResId = resId;
         mCommandStart = cmdStart;
         mCommandStop = cmdStop;
+        mKillMethod = method;
         mCommandStat = cmdStat;
         mStatus = status;
         mCpuUsage = cpu;
@@ -90,13 +96,14 @@ public class Command implements Parcelable {
         mSystemCmd = bSystem;
     }
 
-    public Command(String name, int resId, String cmdStart, String cmdStop, String cmdStat, boolean bOutput,
-                   boolean bStatus, boolean bSystem) {
-        this(name, resId, cmdStart, cmdStop, cmdStat, Status.NOT_RUNNING, 0, bOutput, bStatus, bSystem);
+    public Command(String name, int resId, String cmdStart, String cmdStop, KillMethod method,
+                   String cmdStat, boolean bOutput, boolean bStatus, boolean bSystem) {
+        this(name, resId, cmdStart, cmdStop, method, cmdStat, Status.NOT_RUNNING, 0, bOutput, bStatus, bSystem);
     }
 
     public Command(String name, String cmdStart, String cmdStop, String cmdStat) {
-        this(name, R.drawable.unknown_item, cmdStart, cmdStop, cmdStat, Status.NOT_RUNNING, 0, false, false, false);
+        this(name, R.drawable.unknown_item, cmdStart, cmdStop, KillMethod.NONE,
+                cmdStat, Status.NOT_RUNNING, 0, false, false, false);
     }
 
     public Command(JSONObject json) {
@@ -106,6 +113,7 @@ public class Command implements Parcelable {
             mCommandStat = json.getString(KEY_CMD_STAT);
             mName = json.getString(KEY_NAME);
             mStatus = Status.values()[json.getInt(KEY_STATUS)];
+            mKillMethod = KillMethod.values()[json.getInt(KEY_KILLMETHOD)];
             mCpuUsage = json.getInt(KEY_CPU_USAGE);
             mDisplayOutput = json.getBoolean(KEY_DISPLAY_OUTPUT);
             mDisplayStatus = json.getBoolean(KEY_DISPLAY_STATUS);
@@ -129,6 +137,7 @@ public class Command implements Parcelable {
         parcel.writeString(mCommandStat);
         parcel.writeInt(mCommandResId);
         parcel.writeInt(mStatus.ordinal());
+        parcel.writeInt(mKillMethod.ordinal());
         parcel.writeInt(mCpuUsage);
         parcel.writeByte((byte) (mDisplayOutput ? 1 : 0));
         parcel.writeByte((byte) (mDisplayStatus ? 1 : 0));
@@ -144,11 +153,12 @@ public class Command implements Parcelable {
             String cmdStat = parcel.readString();
             int resId = parcel.readInt();
             Status status = Status.values()[parcel.readInt()];
+            KillMethod method = KillMethod.values()[parcel.readInt()];
             int cpu = parcel.readInt();
             boolean bOutput = parcel.readByte() != 0;
             boolean bStatus = parcel.readByte() != 0;
             boolean bSystem = parcel.readByte() != 0;
-            return new Command(name, resId, cmdStart, cmdStop, cmdStat, status, cpu, bOutput, bStatus, bSystem);
+            return new Command(name, resId, cmdStart, cmdStop, method, cmdStat, status, cpu, bOutput, bStatus, bSystem);
         }
 
         @Override
@@ -182,6 +192,14 @@ public class Command implements Parcelable {
 
     public void setStatus(Status status) {
         mStatus = status;
+    }
+
+    public KillMethod getKillMethod() {
+        return mKillMethod;
+    }
+
+    public void setKillMethod(KillMethod method) {
+        mKillMethod = method;
     }
 
     public int getCpuUsage() {
@@ -258,6 +276,8 @@ public class Command implements Parcelable {
         buffer.append(quoteToKeyValue(KEY_NAME, mName));
         buffer.append(",");
         buffer.append(quoteToKeyValue(KEY_STATUS, mStatus.ordinal()));
+        buffer.append(",");
+        buffer.append(quoteToKeyValue(KEY_KILLMETHOD, mKillMethod.ordinal()));
         buffer.append(",");
         buffer.append(quoteToKeyValue(KEY_CPU_USAGE, mCpuUsage));
         buffer.append(",");
