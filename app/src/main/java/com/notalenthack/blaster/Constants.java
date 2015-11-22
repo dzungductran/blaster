@@ -70,9 +70,10 @@ public class Constants {
     public static final int SERIAL_CMD_START    = 1;
     public static final int SERIAL_CMD_STATUS   = 2;
     public static final int SERIAL_CMD_ERROR    = 3;
-    public static final int SERIAL_CMD_KILL     = 4;
-    public static final int SERIAL_CMD_STOP     = 5;
+    public static final int SERIAL_CMD_KILL     = 9;
+    public static final int SERIAL_CMD_STOP     = 17;
     public static final int SERIAL_CMD_CPU_INFO = 6;
+    public static final int SERIAL_CMD_TERM     = 15;
 
     public static final int SERIAL_CMD_CLOSE        = 0xFF;
 

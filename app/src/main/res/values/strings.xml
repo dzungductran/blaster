@@ -36,8 +36,8 @@
     <string name="delete">Delete</string>
     <string name="execute_all">Execute All</string>
     <string name="launch_codes">Launch Codes</string>
-    <string name="killterm">Kill terminate</string>
-    <string name="killstop">Kill stop</string>
+    <string name="killterm">Terminate</string>
+    <string name="killstop">Kill</string>
 
 
 </resources>

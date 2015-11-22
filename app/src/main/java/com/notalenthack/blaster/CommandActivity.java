@@ -475,11 +475,24 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
                             command.getCommandStart(), outType);
                 } else if (status == Command.Status.RUNNING || status == Command.Status.SLEEPING) {
-                    mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            command.getCommandStop(), outType);
+                    if (command.getCommandStop().isEmpty()) {
+                        if (command.getKillMethod() == Command.KillMethod.TERMINATE) {
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_TERM,
+                                    command.getCommandStart(), outType);
+                        } else if (command.getKillMethod() == Command.KillMethod.KILL) {
+                            mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
+                                    command.getCommandStart(), outType);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Unknown stop command: "
+                                    + command.getKillMethod(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                                command.getCommandStop(), outType);
+                    }
                 } else {
-                    Toast.makeText(getApplicationContext(),
-                            "Unknown command state: " + status, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Unknown command state: "
+                            + status, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 mSerialService.sendStatusCommand(command.getCommandStat(), position, true);

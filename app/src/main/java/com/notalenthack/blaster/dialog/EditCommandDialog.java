@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
@@ -49,7 +50,8 @@ import javax.obex.PasswordAuthentication;
 /**
  * Edit command dialog
  */
-public class EditCommandDialog extends DialogFragment implements IconPickerDialog.IconSelectedCallback {
+public class EditCommandDialog extends DialogFragment implements
+        IconPickerDialog.IconSelectedCallback, RadioButton.OnClickListener {
     private static final String TAG = "EditCommandDialog";
     private static final boolean D = true;
 
@@ -142,9 +144,11 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         View view = inflater.inflate(R.layout.command_detail_dlg, container, false);
 
         mStopText=(EditText)view.findViewById(R.id.stopCommand);
-
         mRKillStop = (RadioButton)view.findViewById(R.id.rkillstop);
+        mRKillStop.setOnClickListener(this);
         mRKillTerm = (RadioButton)view.findViewById(R.id.rkillterm);
+        mRKillTerm.setOnClickListener(this);
+
         mStopText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -162,8 +166,6 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
                     mRKillStop.setEnabled(true);
                     mRKillTerm.setEnabled(true);
                 } else {
-                    mRKillStop.setChecked(false);
-                    mRKillTerm.setChecked(false);
                     mRKillStop.setEnabled(false);
                     mRKillTerm.setEnabled(false);
                 }
@@ -243,8 +245,27 @@ public class EditCommandDialog extends DialogFragment implements IconPickerDialo
         return view;
     }
 
+    public void onClick(View view) {
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.rkillstop:
+                if (checked) {
+                    mCommand.setKillMethod(Command.KillMethod.KILL);
+                }
+                break;
+            case R.id.rkillterm:
+                if (checked) {
+                    mCommand.setKillMethod(Command.KillMethod.TERMINATE);
+                }
+                break;
+        }
+    }
+
     private void updateRadioButtons() {
-        if (mCommand.getKillMethod() == Command.KillMethod.STOP) {
+        if (mCommand.getKillMethod() == Command.KillMethod.KILL) {
             mRKillStop.setChecked(true);
         } else if (mCommand.getKillMethod() == Command.KillMethod.TERMINATE) {
             mRKillTerm.setChecked(true);
