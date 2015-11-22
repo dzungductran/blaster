@@ -57,8 +57,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Class that displays all the commands
@@ -470,7 +473,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                 }
                 if (status == Command.Status.NOT_RUNNING) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            command.getCommandStart(), outType);
+                            handleFileSubstitution(command.getCommandStart()), outType);
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
                             command.getCommandStart(), outType);
@@ -523,6 +526,20 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             }
         };
         registerReceiver(mReceiver, filter);
+    }
+
+    private String handleFileSubstitution(String command) {
+        if (command.contains("%f")) {
+            return command.replace("%f", getTimeStamp(new Date()));
+        } else {
+            return command;
+        }
+    }
+
+    private String getTimeStamp(Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return simpleDateFormat.format(date);
     }
 
     private void startStatusUpdate() {
@@ -585,7 +602,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             cmd = new Command("Download files", R.drawable.ic_sample_3, Command.OBEX_FTP_START,
                     Command.OBEX_FTP_STOP, Command.KillMethod.NONE, Command.OBEX_FTP_STAT, false, true, true);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls",
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls %f.mp4",
                     "", Command.KillMethod.TERMINATE, "", false, false, false);
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, Command.LSM9DS0_START,
