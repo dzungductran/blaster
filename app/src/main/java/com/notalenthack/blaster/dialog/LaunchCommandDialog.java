@@ -35,8 +35,13 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.notalenthack.blaster.R;
+
+import org.w3c.dom.Text;
+
+import java.util.Random;
 
 /**
  * Edit command dialog
@@ -72,6 +77,12 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
     private ImageButton mBtnBack;
     private ImageButton mBtnLaunch;
 
+    // Codes
+    private TextView mTxtCode1;
+    private TextView mTxtCode2;
+    private TextView mTxtCode3;
+    private TextView mTxtCode4;
+
     /**
      * Create a new instance of MyDialogFragment, providing "num"
      * as an argument.
@@ -97,6 +108,8 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
         if (D) Log.d(TAG, "Showing Dialog");
         mView = inflater.inflate(R.layout.pin_input, container, false);
         getDialog().setTitle(getString(R.string.launch_codes));
+
+        setupLaunchCodes();
 
         setupEditFields();
         mCurEditPin = mEditPin1;
@@ -190,6 +203,25 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
         mBtnBack.setOnClickListener(this);
     }
 
+    // Setup launch codes
+    private void setupLaunchCodes() {
+        Random rn = new Random();
+        int num1 = rn.nextInt(10);
+        int num2 = rn.nextInt(10);
+        int num3 = rn.nextInt(10);
+        int num4 = rn.nextInt(10);
+
+        mTxtCode1 = (TextView)mView.findViewById(R.id.code1);
+        mTxtCode2 = (TextView)mView.findViewById(R.id.code2);
+        mTxtCode3 = (TextView)mView.findViewById(R.id.code3);
+        mTxtCode4 = (TextView)mView.findViewById(R.id.code4);
+
+        mTxtCode1.setText(String.valueOf(num1));
+        mTxtCode2.setText(String.valueOf(num2));
+        mTxtCode3.setText(String.valueOf(num3));
+        mTxtCode4.setText(String.valueOf(num4));
+    }
+
     // Set handle of text
     private void setupEditFields() {
         mEditPin1 = (EditText)mView.findViewById(R.id.entry1);
@@ -258,7 +290,16 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
             @Override
             public void afterTextChanged(Editable s) {
                 if (!s.toString().isEmpty()) {
+                    if (mTxtCode1.getText().toString().equals(mEditPin1.getText().toString()) &&
+                            mTxtCode2.getText().toString().equals(mEditPin2.getText().toString()) &&
+                            mTxtCode3.getText().toString().equals(mEditPin3.getText().toString()) &&
+                            mTxtCode4.getText().toString().equals(mEditPin4.getText().toString())) {
+                        mBtnLaunch.setImageResource(R.drawable.ic_launcher);
+                    } else {
+                        mBtnLaunch.setImageResource(R.drawable.ic_no_launch);
+                    }
                 } else {
+                    mBtnLaunch.setImageResource(R.drawable.ic_no_launch);
                     mCurEditPin = mEditPin3;
                 }
                 mCurEditPin.setSelection(mCurEditPin.getText().length());
