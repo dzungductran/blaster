@@ -25,16 +25,23 @@ package com.notalenthack.blaster.dialog;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+
 import com.notalenthack.blaster.R;
 
 /**
  * Edit command dialog
  */
-public class LaunchCommandDialog extends DialogFragment {
+public class LaunchCommandDialog extends DialogFragment implements Button.OnClickListener {
     private static final String TAG = "LaunchCommandDialog";
     private static final boolean D = true;
 
@@ -42,6 +49,28 @@ public class LaunchCommandDialog extends DialogFragment {
     public static final String TAG_LAUNCH_DIALOG = "LaunchCommandDialog";
 
     private Activity mActivity;
+
+    private View mView;
+
+    private EditText mEditPin1;
+    private EditText mEditPin2;
+    private EditText mEditPin3;
+    private EditText mEditPin4;
+    private EditText mCurEditPin;
+
+    // buttons
+    private Button mBtnOne;
+    private Button mBtnTwo;
+    private Button mBtnThree;
+    private Button mBtnFour;
+    private Button mBtnFive;
+    private Button mBtnSix;
+    private Button mBtnSeven;
+    private Button mBtnEight;
+    private Button mBtnNine;
+    private Button mBtnZero;
+    private ImageButton mBtnBack;
+    private ImageButton mBtnLaunch;
 
     /**
      * Create a new instance of MyDialogFragment, providing "num"
@@ -66,11 +95,17 @@ public class LaunchCommandDialog extends DialogFragment {
                              ViewGroup container, Bundle savedInstanceState) {
 
         if (D) Log.d(TAG, "Showing Dialog");
-        View view = inflater.inflate(R.layout.pin_input, container, false);
-
+        mView = inflater.inflate(R.layout.pin_input, container, false);
         getDialog().setTitle(getString(R.string.launch_codes));
 
-        return view;
+        setupEditFields();
+        mCurEditPin = mEditPin1;
+
+        setupButtons();
+
+        setNoKeyBoard();
+
+        return mView;
     }
 
     /* Init the font manager
@@ -86,4 +121,185 @@ public class LaunchCommandDialog extends DialogFragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()) {
+            case R.id.number0:
+                mCurEditPin.setText("0");
+                break;
+            case R.id.number1:
+                mCurEditPin.setText("1");
+                break;
+            case R.id.number2:
+                mCurEditPin.setText("2");
+                break;
+            case R.id.number3:
+                mCurEditPin.setText("3");
+                break;
+            case R.id.number4:
+                mCurEditPin.setText("4");
+                break;
+            case R.id.number5:
+                mCurEditPin.setText("5");
+                break;
+            case R.id.number6:
+                mCurEditPin.setText("6");
+                break;
+            case R.id.number7:
+                mCurEditPin.setText("7");
+                break;
+            case R.id.number8:
+                mCurEditPin.setText("8");
+                break;
+            case R.id.number9:
+                mCurEditPin.setText("9");
+                break;
+            case R.id.delete:
+                mCurEditPin.setText("");
+                break;
+        }
+    }
+
+    // Setup buttons
+    private void setupButtons() {
+        // buttons
+        mBtnZero = (Button)mView.findViewById(R.id.number0);
+        mBtnOne = (Button)mView.findViewById(R.id.number1);
+        mBtnTwo = (Button)mView.findViewById(R.id.number2);
+        mBtnThree = (Button)mView.findViewById(R.id.number3);
+        mBtnFour = (Button)mView.findViewById(R.id.number4);
+        mBtnFive = (Button)mView.findViewById(R.id.number5);
+        mBtnSix = (Button)mView.findViewById(R.id.number6);
+        mBtnSeven = (Button)mView.findViewById(R.id.number7);
+        mBtnEight = (Button)mView.findViewById(R.id.number8);
+        mBtnNine = (Button)mView.findViewById(R.id.number9);
+        mBtnBack = (ImageButton)mView.findViewById(R.id.delete);
+        mBtnLaunch = (ImageButton)mView.findViewById(R.id.launch);
+
+        mBtnZero.setOnClickListener(this);
+        mBtnOne.setOnClickListener(this);
+        mBtnTwo.setOnClickListener(this);
+        mBtnThree.setOnClickListener(this);
+        mBtnFour.setOnClickListener(this);
+        mBtnFive.setOnClickListener(this);
+        mBtnSix.setOnClickListener(this);
+        mBtnSeven.setOnClickListener(this);
+        mBtnEight.setOnClickListener(this);
+        mBtnNine.setOnClickListener(this);
+        mBtnBack.setOnClickListener(this);
+    }
+
+    // Set handle of text
+    private void setupEditFields() {
+        mEditPin1 = (EditText)mView.findViewById(R.id.entry1);
+        mEditPin2 = (EditText)mView.findViewById(R.id.entry2);
+        mEditPin3 = (EditText)mView.findViewById(R.id.entry3);
+        mEditPin4 = (EditText)mView.findViewById(R.id.entry4);
+
+        mEditPin1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()) {
+                    mCurEditPin = mEditPin2;
+                }
+                mCurEditPin.setSelection(mCurEditPin.getText().length());
+                mCurEditPin.requestFocus();
+            }
+        });
+
+        mEditPin2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()) {
+                    mCurEditPin = mEditPin3;
+                } else {
+                    mCurEditPin = mEditPin1;
+                }
+                mCurEditPin.setSelection(mCurEditPin.getText().length());
+                mCurEditPin.requestFocus();
+            }
+        });
+
+        mEditPin3.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()) {
+                    mCurEditPin = mEditPin4;
+                } else {
+                    mCurEditPin = mEditPin2;
+                }
+                mCurEditPin.setSelection(mCurEditPin.getText().length());
+                mCurEditPin.requestFocus();
+            }
+        });
+
+        mEditPin4.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()) {
+                } else {
+                    mCurEditPin = mEditPin3;
+                }
+                mCurEditPin.setSelection(mCurEditPin.getText().length());
+                mCurEditPin.requestFocus();
+
+            }
+        });
+    }
+
+    // Hide keyboard
+    private void setNoKeyBoard() {
+        mEditPin1.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                }
+            }
+        });
+        mEditPin2.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                }
+            }
+        });
+        mEditPin3.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                }
+            }
+        });
+        mEditPin4.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                }
+            }
+        });}
 }

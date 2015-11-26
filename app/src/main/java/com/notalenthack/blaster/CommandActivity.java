@@ -132,6 +132,8 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mBtnExecAll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    launchCommand();
+                    /*
                     // do a quick status update on the commands
                     List<Command> commands = mListAdapter.getCommands();
                     // this list should be in the same order as in the ListBox
@@ -145,6 +147,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                                     cmd.getCommandStart(), outType);
                         }
                     }
+                    */
                 }
             });
 
