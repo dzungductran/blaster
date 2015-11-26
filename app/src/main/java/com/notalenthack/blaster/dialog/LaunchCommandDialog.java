@@ -37,10 +37,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.notalenthack.blaster.Command;
 import com.notalenthack.blaster.R;
-
-import org.w3c.dom.Text;
-
 import java.util.Random;
 
 /**
@@ -52,6 +50,13 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
 
     // TAGs for dialogs
     public static final String TAG_LAUNCH_DIALOG = "LaunchCommandDialog";
+
+    public interface LaunchCallback {
+        public void launch(Command cmd, boolean bLaunch);
+    }
+
+    private LaunchCallback mCallback = null;
+    private Command mCommand = null;
 
     private Activity mActivity;
 
@@ -77,6 +82,8 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
     private ImageButton mBtnBack;
     private ImageButton mBtnLaunch;
 
+    private boolean mBLaunch = false;
+
     // Codes
     private TextView mTxtCode1;
     private TextView mTxtCode2;
@@ -87,9 +94,21 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
      * Create a new instance of MyDialogFragment, providing "num"
      * as an argument.
      */
-    public static LaunchCommandDialog newInstance() {
+    public static LaunchCommandDialog newInstance(Command cmd, LaunchCallback callback) {
         LaunchCommandDialog f = new LaunchCommandDialog();
+        f.setCallback(callback);
+        f.setCommand(cmd);
         return f;
+    }
+
+    // set the callback before doing anything else
+    public void setCallback(LaunchCallback callback) {
+        mCallback = callback;
+    }
+
+    // set the command
+    public void setCommand(Command command) {
+        mCommand = command;
     }
 
     public LaunchCommandDialog() {
@@ -201,6 +220,16 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
         mBtnEight.setOnClickListener(this);
         mBtnNine.setOnClickListener(this);
         mBtnBack.setOnClickListener(this);
+
+        mBtnLaunch = (ImageButton)mView.findViewById(R.id.launch);
+        mBtnLaunch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCallback != null)
+                    mCallback.launch(mCommand, mBLaunch);
+                dismiss();
+            }
+        });
     }
 
     // Setup launch codes
@@ -295,11 +324,14 @@ public class LaunchCommandDialog extends DialogFragment implements Button.OnClic
                             mTxtCode3.getText().toString().equals(mEditPin3.getText().toString()) &&
                             mTxtCode4.getText().toString().equals(mEditPin4.getText().toString())) {
                         mBtnLaunch.setImageResource(R.drawable.ic_launcher);
+                        mBLaunch = true;
                     } else {
                         mBtnLaunch.setImageResource(R.drawable.ic_no_launch);
+                        mBLaunch = false;
                     }
                 } else {
                     mBtnLaunch.setImageResource(R.drawable.ic_no_launch);
+                    mBLaunch = false;
                     mCurEditPin = mEditPin3;
                 }
                 mCurEditPin.setSelection(mCurEditPin.getText().length());

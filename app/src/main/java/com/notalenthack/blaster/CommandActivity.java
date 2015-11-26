@@ -66,7 +66,8 @@ import java.util.TimeZone;
 /**
  * Class that displays all the commands
  */
-public class CommandActivity extends Activity implements EditCommandDialog.CommandCallback, View.OnClickListener  {
+public class CommandActivity extends Activity implements
+        EditCommandDialog.CommandCallback, View.OnClickListener, LaunchCommandDialog.LaunchCallback {
     private static final String TAG = "CommandActivity";
     private static final boolean D = false;
 
@@ -132,22 +133,16 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             mBtnExecAll.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    launchCommand();
-                    /*
                     // do a quick status update on the commands
                     List<Command> commands = mListAdapter.getCommands();
                     // this list should be in the same order as in the ListBox
                     for (Command cmd : commands) {
-                        if (!cmd.getCommandStart().equalsIgnoreCase(Command.OBEX_FTP_START)) {
-                            String outType = Constants.SERIAL_TYPE_STDERR;
-                            if (cmd.getDisplayOutput()) {
-                                outType = Constants.SERIAL_TYPE_STDOUT_ERR; // capture stdout+stderr
-                            }
-                            mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                                    cmd.getCommandStart(), outType);
+                        if (cmd.getCommandStart().equalsIgnoreCase(Command.LAUNCHER_START)) {
+                            launchCommand(cmd);
+                        } else if (!cmd.getCommandStart().equalsIgnoreCase(Command.OBEX_FTP_START)) {
+                            executeCommand(cmd);
                         }
                     }
-                    */
                 }
             });
 
@@ -157,6 +152,15 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
             Log.e(TAG, "Bluetooth device is not initialized");
             finish();
         }
+    }
+
+    private void executeCommand(Command cmd) {
+        String outType = Constants.SERIAL_TYPE_STDERR;
+        if (cmd.getDisplayOutput()) {
+            outType = Constants.SERIAL_TYPE_STDOUT_ERR; // capture stdout+stderr
+        }
+        mSerialService.sendCommand(Constants.SERIAL_CMD_START,
+                cmd.getCommandStart(), outType);
     }
 
     private void setupCommandList() {
@@ -398,7 +402,14 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         newFragment.show(ft, EditCommandDialog.TAG_EDIT_COMMAND_DIALOG);
     }
 
-    private void launchCommand() {
+    public void launch(Command cmd, boolean bLaunch) {
+        if (bLaunch) {
+            Toast.makeText(getApplicationContext(), "Launch...", Toast.LENGTH_SHORT).show();
+            executeCommand(cmd);
+        }
+    }
+
+    private void launchCommand(Command cmd) {
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag(LaunchCommandDialog.TAG_LAUNCH_DIALOG);
@@ -408,7 +419,7 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
         ft.addToBackStack(null);
 
         // Create and show the dialog.
-        DialogFragment newFragment = LaunchCommandDialog.newInstance();
+        DialogFragment newFragment = LaunchCommandDialog.newInstance(cmd, this);
         newFragment.show(ft, LaunchCommandDialog.TAG_LAUNCH_DIALOG);
     }
 
@@ -475,8 +486,11 @@ public class CommandActivity extends Activity implements EditCommandDialog.Comma
                     outType = Constants.SERIAL_TYPE_STDOUT_ERR; // capture stdout+stderr
                 }
                 if (status == Command.Status.NOT_RUNNING) {
-                    mSerialService.sendCommand(Constants.SERIAL_CMD_START,
-                            command.getCommandStart(), outType);
+                    if (command.getCommandStart().equalsIgnoreCase(Command.LAUNCHER_START)) {
+                        launchCommand(command);
+                    } else {
+                        executeCommand(command);
+                    }
                 } else if (status == Command.Status.ZOMBIE) {
                     mSerialService.sendCommand(Constants.SERIAL_CMD_KILL,
                             command.getCommandStart(), outType);
