@@ -64,6 +64,8 @@ public class Command implements Parcelable {
     public static final String LAUNCHER_STOP  = "systemctl stop launcher";
     public static final String LAUNCHER_STAT  = "/home/root/launcher/launcherd";
 
+    public static final String VIDEO_START = "ffmpeg -s 320x240 -f video4linux2 -i /dev/video0 -f mpeg1video -b 800k -r 30 %f.mpg";
+
     private String mCommandStart;
     private String mCommandStop;
     private String mCommandStat;

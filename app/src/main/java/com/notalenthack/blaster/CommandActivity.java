@@ -619,7 +619,7 @@ public class CommandActivity extends Activity implements
             cmd = new Command("Download files", R.drawable.ic_sample_3, Command.OBEX_FTP_START,
                     Command.OBEX_FTP_STOP, Command.KillMethod.NONE, Command.OBEX_FTP_STAT, false, true, true);
             jsonArray.put(cmd.toJSON());
-            cmd = new Command("Video recording", R.drawable.ic_sample_10, "/bin/ls %f.mp4",
+            cmd = new Command("Video recording", R.drawable.ic_sample_10, Command.VIDEO_START,
                     "", Command.KillMethod.TERMINATE, "", false, false, false);
             jsonArray.put(cmd.toJSON());
             cmd = new Command("Record GPS data", R.drawable.ic_sample_8, Command.LSM9DS0_START,
